@@ -16,9 +16,13 @@ import copy
 from os.path import exists #Added this to test if there is already a trained network
 from PIL import Image
 import matplotlib.pyplot as plt
+import argparse #For parsing arguments from command line
 
 from deepfool import deepfool
 
+parser = argparse.ArgumentParser() #Create parser variable for command line arguments
+parser.add_argument("-l", "--load_model", help="Automatically loads and uses a trained model if found", action="store_true")
+args = parser.parse_args()
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -68,6 +72,8 @@ if __name__ == '__main__':
     train_network = True
     #Stuff I changed
 
+
+
     if exists('trained_model.pt'):
         #model = TheModelClass(*args, **kwargs)
         model.load_state_dict(torch.load('trained_model.pt'))
@@ -76,17 +82,18 @@ if __name__ == '__main__':
         accuracy = test(model, test_loader)
         print('Model accuracy : %2.2f%%' % accuracy)
 
-
-        #print('Do you want to use this model?')
-        #response = input("Type 'yes' or 'no':")
-        #response = response.lower()
+    if args.load_model:
         response = 'yes'
-        if response == 'yes':
-            train_network = False
-            print('Using loaded model')
-        else:
-            print('training new model')
-            best_accuracy = accuracy
+    else:
+        print('Do you want to use this model?')
+        response = input("Type 'yes' or 'no':")
+        response = response.lower()
+    if response == 'yes':
+        train_network = False
+        print('Using loaded model')
+    else:
+        print('training new model')
+        best_accuracy = accuracy
 
 
     #End of stuff I changed
