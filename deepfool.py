@@ -60,8 +60,8 @@ def deepfool(image, net, num_classes=10, overshoot=0.02, max_iter=50):
         grad_orig = x.grad.data.cpu().numpy().copy()
 
         for k in range(1, num_classes):
-            #TODO: IMPLEMENT THIS PROPERLY OR THIS IS NOT MINIMALLY PERTURBED
-            #x.zero_()
+            #TODO: Investigate exact change
+            x.grad.zero_()
 
             fs[0, I[k]].backward(retain_graph=True)
             cur_grad = x.grad.data.cpu().numpy().copy()
