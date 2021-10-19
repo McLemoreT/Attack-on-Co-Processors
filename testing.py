@@ -22,6 +22,7 @@ from deepfool import deepfool
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
 parser.add_argument("-l", "--load_model", help="Automatically loads and uses a trained model if found", action="store_true")
+parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
 args = parser.parse_args()
 class Net(nn.Module):
     def __init__(self):
@@ -54,8 +55,9 @@ if __name__ == '__main__':
     reference_memristor = memtorch.bh.memristor.VTEAM
     reference_memristor_params = {'time_series_resolution': 1e-10}
     memristor = reference_memristor(**reference_memristor_params)
-    memristor.plot_hysteresis_loop()
-    memristor.plot_bipolar_switching_behaviour()
+    if args.verbose:
+        memristor.plot_hysteresis_loop()
+        memristor.plot_bipolar_switching_behaviour()
 
 
     device = torch.device('cpu' if 'cpu' in memtorch.__version__ else 'cuda')
