@@ -127,7 +127,7 @@ if __name__ == '__main__':
     fool_loader = torch.utils.data.DataLoader(
         fool_set, batch_size=1, shuffle=False, num_workers=2
     )
-    example = next(iter(fool_loader))[0][0]
+    example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
     r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model)
     
@@ -143,24 +143,23 @@ if __name__ == '__main__':
 
     clip = lambda x: clip_tensor(x, 0, 1)
     
+    #These are uneccessary because this set is "grayscale"
+    #std = [ 0.229, 0.224, 0.225 ]
+    #mean = [ 0.485, 0.456, 0.406 ]
     
-    std = [ 0.229, 0.224, 0.225 ]
-    mean = [ 0.485, 0.456, 0.406 ]
-    tf = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), #
+    tf = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), #because grayscale
         transforms.Lambda(clip),
         transforms.ToPILImage(),
         transforms.CenterCrop(32)])
         
-    
+    #Display perturbed image
     plt.figure()
     plt.imshow(tf(pert_image.cpu()[0]))
     plt.title(label_pert)
     plt.savefig("Image_Original.png")
     plt.show()
     
-
-
-
+    #Display original image
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
     plt.imshow(pixels)
