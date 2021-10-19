@@ -149,7 +149,7 @@ if __name__ == '__main__':
     tf = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), #
         transforms.Lambda(clip),
         transforms.ToPILImage(),
-        transforms.CenterCrop(32)])
+        transforms.CenterCrop(28)])
         
     
     plt.figure()
