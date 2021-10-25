@@ -13,10 +13,10 @@ import numpy as np
 import torchvision.transforms as transforms
 from memtorch.bh.nonideality.NonIdeality import apply_nonidealities
 import copy
-from os.path import exists #Added this to test if there is already a trained network
+from os.path import exists # Added this to test if there is already a trained network
 from PIL import Image
 import matplotlib.pyplot as plt
-import argparse #For parsing arguments from command line
+import argparse # For parsing arguments from command line
 
 from deepfool import deepfool
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
-    batch_size = 256
+    batch_size = 256 
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
     model = Net().to(device)
     criterion = nn.CrossEntropyLoss()
@@ -80,27 +80,33 @@ if __name__ == '__main__':
         #model = TheModelClass(*args, **kwargs)
         model.load_state_dict(torch.load('trained_model.pt'))
         print('Found and loaded existing model')
-        print(model.eval())
+        print(model.eval()) 
         accuracy = test(model, test_loader)
         print('Model accuracy : %2.2f%%' % accuracy)
+        if args.load_model: # checks for -L argument, automatic yes if true
+            response = 'yes'
+        else:
+            print('Do you want to use this model?')
+            response = input("Type 'yes' or 'no':")
+            response = response.lower()
+        if response == 'yes':
+            train_network = False
+            print('Using loaded model')
+        else:
+            print('training new model')
+            best_accuracy = accuracy
+    else:
+        print('Model not found. Training new model.')
+        accuracy = test(model, test_loader)
+        print('Model accuracy : %2.2f%%' % accuracy)
+        train_network = True #starts training
 
-    if args.load_model:
-        response = 'yes'
-    else:
-        print('Do you want to use this model?')
-        response = input("Type 'yes' or 'no':")
-        response = response.lower()
-    if response == 'yes':
-        train_network = False
-        print('Using loaded model')
-    else:
-        print('training new model')
-        best_accuracy = accuracy
+
 
 
     #End of stuff I changed
 
-    if train_network:
+    if train_network: # general pytorch code for training network
 
         for epoch in range(0, epochs):
             print('Epoch: [%d]\t\t' % (epoch + 1), end='')
@@ -163,14 +169,14 @@ if __name__ == '__main__':
         
     #Display perturbed image
     plt.figure()
-    plt.imshow(tf(pert_image.cpu()[0]))
-    plt.title(label_pert)
-    plt.savefig("Image_Fooled.png")
+    plt.imshow(tf(pert_image.cpu()[0])) #shows it
+    plt.title(label_pert) 
+    plt.savefig("Image_Fooled.png") #saves to disk
     plt.show()
     
     #Display original image
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
-    plt.imshow(pixels)
+    plt.imshow(pixels) 
     plt.savefig("Image_Original.png")
     plt.show()
