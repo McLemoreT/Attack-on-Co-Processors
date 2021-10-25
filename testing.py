@@ -66,7 +66,7 @@ if __name__ == '__main__':
     step_lr = 5
     batch_size = 256 
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
-    model = Net().to(device)
+    model = Net().to(device) # model created, some random thing
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     best_accuracy = 0
@@ -76,11 +76,11 @@ if __name__ == '__main__':
 
 
 
-    if exists('trained_model.pt'):
+    if exists('trained_model.pt'): # If model exists
         #model = TheModelClass(*args, **kwargs)
-        model.load_state_dict(torch.load('trained_model.pt'))
+        model.load_state_dict(torch.load('trained_model.pt')) # Load it
         print('Found and loaded existing model')
-        print(model.eval()) 
+        print(model.eval())
         accuracy = test(model, test_loader)
         print('Model accuracy : %2.2f%%' % accuracy)
         if args.load_model: # checks for -L argument, automatic yes if true
@@ -89,6 +89,7 @@ if __name__ == '__main__':
             print('Do you want to use this model?')
             response = input("Type 'yes' or 'no':")
             response = response.lower()
+            
         if response == 'yes':
             train_network = False
             print('Using loaded model')
@@ -97,8 +98,7 @@ if __name__ == '__main__':
             best_accuracy = accuracy
     else:
         print('Model not found. Training new model.')
-        accuracy = test(model, test_loader)
-        print('Model accuracy : %2.2f%%' % accuracy)
+        accuracy = test(model, test_loader) # Will be very low, but needed for comparison improvement
         train_network = True #starts training
 
 
