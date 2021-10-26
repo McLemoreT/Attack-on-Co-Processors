@@ -150,7 +150,8 @@ if __name__ == '__main__':
     #From deepfool_test.py
     print("Original label = ", label_orig)
     print("Perturbed label = ", label_pert)
-
+    print("Perturbation Vector = ", np.linalg.norm(r))
+    
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
         A = torch.min(A, maxv*torch.ones(A.shape))
