@@ -17,6 +17,7 @@ from os.path import exists # Added this to test if there is already a trained ne
 from PIL import Image
 import matplotlib.pyplot as plt
 import argparse # For parsing arguments from command line
+import pandas as pd
 
 from deepfool import deepfool
 
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
-    batch_size = 256 
+    batch_size = 256
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
     model = Net().to(device) # model created, some random thing
     criterion = nn.CrossEntropyLoss()
@@ -168,6 +169,11 @@ if __name__ == '__main__':
     print("Original label = ", label_orig)
     print("Perturbed label = ", label_pert)
     print("Perturbation Vector = ", np.linalg.norm(r))
+
+    numArr = np.array([[3, 7], [2, 4]])
+ #   numArr = np.empty(10, 10)
+    df = pd.DataFrame(numArr)
+    df.to_csv('file.csv', index=False)
     
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
