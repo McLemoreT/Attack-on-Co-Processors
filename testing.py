@@ -22,7 +22,7 @@ import pandas as pd
 from deepfool import deepfool
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
-parser.add_argument("-l", "--load_model", help="Automatically loads and uses a trained model if found", action="store_true")
+parser.add_argument("-l", "--load_model", help="Disables automatically loading and useing a trained model if found", action="store_true")
 parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
 args = parser.parse_args()
 
@@ -98,11 +98,13 @@ if __name__ == '__main__':
         accuracy = test(model, test_loader)
         print('Model accuracy : %2.2f%%' % accuracy)
         if args.load_model: # checks for -L argument, automatic yes if true
-            response = 'yes'
-        else:
+            print(args.load_model)
             print('Do you want to use this model?')
             response = input("Type 'yes' or 'no':")
             response = response.lower()
+        else:
+            response = 'yes'
+
             
         if response == 'yes':
             train_network = False
