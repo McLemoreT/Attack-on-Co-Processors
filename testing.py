@@ -24,6 +24,9 @@ parser = argparse.ArgumentParser() #Create parser variable for command line argu
 parser.add_argument("-l", "--load_model", help="Automatically loads and uses a trained model if found", action="store_true")
 parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
 args = parser.parse_args()
+
+torch.manual_seed(0) #seeds the array for consistent results
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -50,6 +53,18 @@ def test(model, test_loader):
         correct += pred.eq(target.to(device).data.view_as(pred)).cpu().sum()
 
     return 100. * float(correct) / float(len(test_loader.dataset))
+
+def getFoolData(model, test_loader):
+    #this is where array go
+    for batch_idx, (data, target) in enumerate(test_loader):
+        output = model(data.to(device))
+        pred = output.data.max(1)[1]
+        correct += pred.eq(target.to(device).data.view_as(pred)).cpu().sum()
+        #this is the loop where incrementing go
+
+    return 100. * float(correct) / float(len(test_loader.dataset))
+
+
 
 if __name__ == '__main__':
     reference_memristor = memtorch.bh.memristor.VTEAM
