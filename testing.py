@@ -56,16 +56,14 @@ def test(model, test_loader):
     return 100. * float(correct) / float(len(test_loader.dataset))
 
 def getFoolData(model, test_loader):
-    #this is where array go
-    for batch_idx, (data, target) in enumerate(test_loader):
-        output = model(data.to(device))
-        pred = output.data.max(1)[1]
-        correct += pred.eq(target.to(device).data.view_as(pred)).cpu().sum()
-        #this is the loop where incrementing go
-
-    return 100. * float(correct) / float(len(test_loader.dataset))
-
-
+    numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9
+    for batch_idx, (data, target) in enumerate(test_loader): # Loops through all test set images (MNIST images)
+        r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # r - perturbation vector
+        numArr[label_orig, label_pert]++1  
+    print(numArr)
+    df = pd.DataFrame(numArr)
+    df.to_csv('file.csv', index=False)
+    return r, loop_i, label_orig, label_pert, pert_image;
 
 if __name__ == '__main__':
     reference_memristor = memtorch.bh.memristor.VTEAM
@@ -160,24 +158,21 @@ if __name__ == '__main__':
     )
     example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
-    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model)
-    
+#    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model)
+    r, loop_i, label_orig, label_pert, pert_image = getFoolData(model, test_loader)   
     
     #From deepfool_test.py
     print("Original label = ", label_orig)
     print("Perturbed label = ", label_pert)
     print("Perturbation Vector = ", np.linalg.norm(r))
-
-    numArr = np.array([[3, 7], [2, 4]])
- #   numArr = np.empty(10, 10)
-    df = pd.DataFrame(numArr)
-    df.to_csv('file.csv', index=False)
     
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
         A = torch.min(A, maxv*torch.ones(A.shape))
         return A
+    
 
+    
     clip = lambda x: clip_tensor(x, 0, 1)
     
     #These are uneccessary because this set is "grayscale"
