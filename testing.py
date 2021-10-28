@@ -18,6 +18,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import argparse # For parsing arguments from command line
 import pandas as pd
+import time 
 
 from deepfool import deepfool
 
@@ -57,26 +58,30 @@ def test(model, test_loader):
 
 def getFoolData(model, test_loader):
     numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9
-    #for batch_idx, (data, target) in enumerate(test_loader): # Loops through all test set images (MNIST images)
     count = 0
-
-    for batch in fool_loader:
-        for image in batch[0]:
+    totalRuns = 1000 # TODO: this needs to be set to the size of the dataset, maybe len(model) ?
+    filename = time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv'
+    df = pd.DataFrame(numArr)
+    
+    display('Iterating through dataset of size ', totalRuns)
+    for batch in fool_loader: # Loads all batches in loader
+        for image in batch[0]: # Loads all images in batch
             r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # r - perturbation vector
             numArr[label_pert, label_orig]+=1  
             count += 1
-            if(count % 50 == 0): # TODO: print percentage progress instead of this
-                print(count)
-            if(count == 1000):
+            if(count % 50 == 0): # prints progress every 50 counts
+                print(count * 100 / totalRuns,'%') # progress as a percentage
+                df.to_csv(filename, index=False) # TODO: print model used, date, and time
+            if(count >= totalRuns): 
                 break
         else:
             continue
         break
             
-    print(numArr)
-    df = pd.DataFrame(numArr)
-    df.to_csv('file.csv', index=False) # TODO: print model used, date, and time
-    return r, loop_i, label_orig, label_pert, pert_image;
+    print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
+    print(numArr) 
+    print('Results stored in \"' + filename + '\"')
+    return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 if __name__ == '__main__':
     reference_memristor = memtorch.bh.memristor.VTEAM
@@ -175,9 +180,9 @@ if __name__ == '__main__':
 
 #    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
     #From deepfool_test.py
-    print("Original label = ", label_orig)
-    print("Perturbed label = ", label_pert)
-    print("Perturbation Vector = ", np.linalg.norm(r))
+#    print("Original label = ", label_orig)
+#    print("Perturbed label = ", label_pert)
+#    print("Perturbation Vector = ", np.linalg.norm(r))
     
     r, loop_i, label_orig, label_pert, pert_image = getFoolData(model, test_loader) # Runs the entire MNIST Batch
     

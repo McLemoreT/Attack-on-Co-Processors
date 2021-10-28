@@ -138,3 +138,4 @@ dmypy.json
 
 #Other
 .bash_history/
+*.csv
