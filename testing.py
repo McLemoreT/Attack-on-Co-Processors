@@ -91,7 +91,7 @@ if __name__ == '__main__':
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
-    batch_size = 1000 #FIXME
+    batch_size = 256
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
     model = Net().to(device) # model created, some random thing
     criterion = nn.CrossEntropyLoss()
