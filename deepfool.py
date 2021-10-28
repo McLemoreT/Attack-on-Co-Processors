@@ -31,8 +31,8 @@ def deepfool(image, net, num_classes=10, overshoot=0.02, max_iter=50):
         print("Using GPU")
         image = image.cuda()
         net = net.cuda()
-    else:
-        print("Using CPU")
+#    else:
+#        print("Using CPU")
 
 
     f_image = net.forward(Variable(image[None, :, :, :], requires_grad=True)).data.cpu().numpy().flatten()

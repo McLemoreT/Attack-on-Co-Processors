@@ -57,12 +57,25 @@ def test(model, test_loader):
 
 def getFoolData(model, test_loader):
     numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9
-    for batch_idx, (data, target) in enumerate(test_loader): # Loops through all test set images (MNIST images)
-        r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # r - perturbation vector
-        numArr[label_orig, label_pert]++1  
+    #for batch_idx, (data, target) in enumerate(test_loader): # Loops through all test set images (MNIST images)
+    count = 0
+
+    for batch in fool_loader:
+        for image in batch[0]:
+            r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # r - perturbation vector
+            numArr[label_pert, label_orig]+=1  
+            count += 1
+            if(count % 50 == 0): # TODO: print percentage progress instead of this
+                print(count)
+            if(count == 1000):
+                break
+        else:
+            continue
+        break
+            
     print(numArr)
     df = pd.DataFrame(numArr)
-    df.to_csv('file.csv', index=False)
+    df.to_csv('file.csv', index=False) # TODO: print model used, date, and time
     return r, loop_i, label_orig, label_pert, pert_image;
 
 if __name__ == '__main__':
@@ -78,7 +91,7 @@ if __name__ == '__main__':
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
-    batch_size = 256
+    batch_size = 1000 #FIXME
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
     model = Net().to(device) # model created, some random thing
     criterion = nn.CrossEntropyLoss()
@@ -160,14 +173,15 @@ if __name__ == '__main__':
     )
     example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
-#    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model)
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(model, test_loader)   
-    
+#    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
     #From deepfool_test.py
     print("Original label = ", label_orig)
     print("Perturbed label = ", label_pert)
     print("Perturbation Vector = ", np.linalg.norm(r))
     
+    r, loop_i, label_orig, label_pert, pert_image = getFoolData(model, test_loader) # Runs the entire MNIST Batch
+    
+
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
         A = torch.min(A, maxv*torch.ones(A.shape))
