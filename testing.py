@@ -68,10 +68,10 @@ def getFoolData(model, test_loader):
             if(count % 50 == 0): # TODO: print percentage progress instead of this
                 print(count)
             if(count == 1000):
-                break
-        else:
-            continue
-        break
+                break #If we have gathed data for 1000 images, break the for loop
+        else: #If this for for loop completes successfully, run this
+            continue #Continue running the for loop
+        break #If the code makes it here, that means we have gathered data for 1000 images
             
     print(numArr)
     df = pd.DataFrame(numArr)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
-    batch_size = 1000 #FIXME
+    batch_size = 256
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
     model = Net().to(device) # model created, some random thing
     criterion = nn.CrossEntropyLoss()
@@ -116,10 +116,10 @@ if __name__ == '__main__':
             response = input("Type 'yes' or 'no':")
             response = response.lower()
         else:
-            response = 'yes'
+            response = 'yes' #Automatically assumes you want to use the existing model if no flag is passed
 
             
-        if response == 'yes':
+        if response == 'yes': #Checks if user wants to use existing model
             train_network = False
             print('Using loaded model')
         else:
