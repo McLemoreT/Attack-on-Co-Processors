@@ -11,7 +11,6 @@ import torch.optim as optim
 from memtorch.utils import LoadMNIST
 import numpy as np
 import torchvision.transforms as transforms
-from memtorch.bh.nonideality.NonIdeality import apply_nonidealities
 import copy
 from os.path import exists # Added this to test if there is already a trained network
 from PIL import Image
@@ -20,6 +19,7 @@ import argparse # For parsing arguments from command line
 import pandas as pd
 
 from deepfool import deepfool
+from patch import patchIdeals
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
 parser.add_argument("-l", "--load_model", help="Disables automatically loading and useing a trained model if found", action="store_true")
@@ -79,13 +79,6 @@ def getFoolData(model, test_loader):
     return r, loop_i, label_orig, label_pert, pert_image;
 
 if __name__ == '__main__':
-    reference_memristor = memtorch.bh.memristor.VTEAM
-    reference_memristor_params = {'time_series_resolution': 1e-10}
-    memristor = reference_memristor(**reference_memristor_params)
-    if args.verbose:
-        memristor.plot_hysteresis_loop()
-        memristor.plot_bipolar_switching_behaviour()
-
 
     device = torch.device('cpu' if 'cpu' in memtorch.__version__ else 'cuda')
     epochs = 10
@@ -174,12 +167,14 @@ if __name__ == '__main__':
     example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
 #    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
-    #From deepfool_test.py
-    print("Original label = ", label_orig)
-    print("Perturbed label = ", label_pert)
-    print("Perturbation Vector = ", np.linalg.norm(r))
+#    From deepfool_test.py
+#    print("Original label = ", label_orig)
+#    print("Perturbed label = ", label_pert)
+#    print("Perturbation Vector = ", np.linalg.norm(r))
     
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(model, test_loader) # Runs the entire MNIST Batch
+    
+    patchedModel = patchIdeals(model)
+    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST Batch
     
 
     def clip_tensor(A, minv, maxv):
