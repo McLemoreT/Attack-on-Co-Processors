@@ -31,6 +31,7 @@ def deepfool(image, net, num_classes=10, overshoot=0.02, max_iter=50):
         print("Using GPU")
         image = image.cuda()
         net = net.cuda()
+#We aren't printing this every time to save some computation time, and to not clog up the output
 #    else:
 #        print("Using CPU")
 

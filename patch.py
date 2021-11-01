@@ -10,49 +10,15 @@ import copy
 from memtorch.mn.Module import patch_model
 from memtorch.map.Input import naive_scale
 from memtorch.map.Parameter import naive_map
+from memtorch.bh.nonideality.NonIdeality import apply_nonidealities
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5, 1)
-        self.conv2 = nn.Conv2d(20, 50, 5, 1)
-        self.fc1 = nn.Linear(4*4*50, 500)
-        self.fc2 = nn.Linear(500, 10)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = F.relu(self.conv2(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*50)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-def test(model, test_loader):
-    correct = 0
-    for batch_idx, (data, target) in enumerate(test_loader):        
-        output = model(data.to(device))
-        pred = output.data.max(1)[1]
-        correct += pred.eq(target.to(device).data.view_as(pred)).cpu().sum()
-
-    return 100. * float(correct) / float(len(test_loader.dataset))
-
-if __name__ == '__main__':
-	device = torch.device('cpu' if 'cpu' in memtorch.__version__ else 'cuda')
-	batch_size = 256
-	train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
-
-
-	reference_memristor = memtorch.bh.memristor.VTEAM
-	reference_memristor_params = {'time_series_resolution': 1e-10}
-	memristor = reference_memristor(**reference_memristor_params)
-	memristor.plot_hysteresis_loop()
-	memristor.plot_bipolar_switching_behaviour()
-
-	model = Net().to(device)
-	model.load_state_dict(torch.load('trained_model.pt'), strict=False)
-	patched_model = patch_model(copy.deepcopy(model),
+def patchIdeals(model):
+    reference_memristor = memtorch.bh.memristor.VTEAM
+    reference_memristor_params = {'time_series_resolution': 1e-10}
+    memristor = reference_memristor(**reference_memristor_params)
+        
+    
+    patched_model = patch_model(copy.deepcopy(model),
                           memristor_model=reference_memristor,
                           memristor_model_params=reference_memristor_params,
                           module_parameters_to_patch=[torch.nn.Conv2d],
@@ -66,6 +32,82 @@ if __name__ == '__main__':
                           ADC_overflow_rate=0.,
                           quant_method='linear')
 
-	patched_model.tune_()
+    patched_model.tune_()
+    #print(test(patched_model, test_loader))
 
-	print(test(patched_model, test_loader))
+
+    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.DeviceFaults],
+                                  lrs_proportion=0.25,
+                                  hrs_proportion=0.10,
+                                  electroform_proportion=0)
+
+    #print(test(patched_model_, test_loader))
+
+
+    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.Endurance],
+                                  x=1e4,
+                                  endurance_model=memtorch.bh.nonideality.endurance_retention_models.model_endurance_retention,
+                                  endurance_model_kwargs={
+                                        "operation_mode": memtorch.bh.nonideality.endurance_retention_models.OperationMode.sudden,
+                                        "p_lrs": [1, 0, 0, 0],
+                                        "stable_resistance_lrs": 100,
+                                        "p_hrs": [1, 0, 0, 0],
+                                        "stable_resistance_hrs": 1000,
+                                        "cell_size": 10,
+                                        "temperature": 350,
+                                  })
+
+    #print(test(patched_model_, test_loader))
+
+
+
+    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.Retention],
+                                  time=1e3,
+                                  retention_model=memtorch.bh.nonideality.endurance_retention_models.model_conductance_drift,
+                                  retention_model_kwargs={
+                                        "initial_time": 1,
+                                        "drift_coefficient": 0.1,
+                                  })
+
+    #print(test(patched_model, test_loader))
+
+
+
+    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.FiniteConductanceStates],
+                                  conductance_states=5)
+
+    #print(test(patched_model, test_loader))
+
+
+
+    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
+                                  simulate=True)
+
+    #print(test(patched_model, test_loader))
+
+
+
+#    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+#                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
+#                                  sweep_duration=2,
+#                                  sweep_voltage_signal_amplitude=1,
+#                                  sweep_voltage_signal_frequency=0.5)
+
+    #print(test(patched_model, test_loader))
+    sigma = 10 #FIXME
+
+    reference_memristor = memtorch.bh.memristor.VTEAM
+    reference_memristor_params = {'time_series_resolution': 1e-10,
+                              'r_off': memtorch.bh.StochasticParameter(loc=1000, scale=200, min=2),
+                              'r_on': memtorch.bh.StochasticParameter(loc=5000, scale=sigma, min=1)}
+
+    memristor = reference_memristor(**reference_memristor_params)
+    memristor.plot_hysteresis_loop()
+    memristor.plot_bipolar_switching_behaviour()
+    
+    return patched_model

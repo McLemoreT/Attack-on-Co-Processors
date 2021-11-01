@@ -11,7 +11,6 @@ import torch.optim as optim
 from memtorch.utils import LoadMNIST
 import numpy as np
 import torchvision.transforms as transforms
-from memtorch.bh.nonideality.NonIdeality import apply_nonidealities
 import copy
 from os.path import exists # Added this to test if there is already a trained network
 from PIL import Image
@@ -21,6 +20,7 @@ import pandas as pd
 import time 
 
 from deepfool import deepfool
+from patch import patchIdeals
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
 parser.add_argument("-l", "--load_model", help="Disables automatically loading and useing a trained model if found", action="store_true")
@@ -73,10 +73,10 @@ def getFoolData(model, test_loader):
                 print(count * 100 / totalRuns,'%') # progress as a percentage
                 df.to_csv(filename, index=False) # TODO: print model used, date, and time
             if(count >= totalRuns): 
-                break
-        else:
-            continue
-        break
+                break #If we have gathed data for 1000 images, break the for loop
+        else: #If this for for loop completes successfully, run this
+            continue #Continue running the for loop
+        break #If the code makes it here, that means we have gathered data for 1000 images
             
     print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
     print(numArr) 
@@ -84,19 +84,12 @@ def getFoolData(model, test_loader):
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 if __name__ == '__main__':
-    reference_memristor = memtorch.bh.memristor.VTEAM
-    reference_memristor_params = {'time_series_resolution': 1e-10}
-    memristor = reference_memristor(**reference_memristor_params)
-    if args.verbose:
-        memristor.plot_hysteresis_loop()
-        memristor.plot_bipolar_switching_behaviour()
-
 
     device = torch.device('cpu' if 'cpu' in memtorch.__version__ else 'cuda')
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
-    batch_size = 1000 #FIXME
+    batch_size = 256
     train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
     model = Net().to(device) # model created, some random thing
     criterion = nn.CrossEntropyLoss()
@@ -121,10 +114,10 @@ if __name__ == '__main__':
             response = input("Type 'yes' or 'no':")
             response = response.lower()
         else:
-            response = 'yes'
+            response = 'yes' #Automatically assumes you want to use the existing model if no flag is passed
 
             
-        if response == 'yes':
+        if response == 'yes': #Checks if user wants to use existing model
             train_network = False
             print('Using loaded model')
         else:
@@ -179,12 +172,14 @@ if __name__ == '__main__':
     example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
 #    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
-    #From deepfool_test.py
+
+#    From deepfool_test.py
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
     
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(model, test_loader) # Runs the entire MNIST Batch
+    patchedModel = patchIdeals(model)
+    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST Batch
     
 
     def clip_tensor(A, minv, maxv):
