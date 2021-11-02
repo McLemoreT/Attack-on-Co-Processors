@@ -57,33 +57,32 @@ def test(model, test_loader):
     return 100. * float(correct) / float(len(test_loader.dataset))
 
 def getFoolData(model, test_loader):
-    numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9
-    count = 0
-    totalRuns = 1000 # TODO: this needs to be set to the size of the dataset, maybe len(model) ?  
-#    print(len(model))
-    print('batch index: ')
-    filename = model.__class__.__name__ + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # TODO: print model used, date, and time
+    numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
+    count = 0 # Represents count of loops, or the image that it's currently on
+    datasetSize = len(fool_set) # Length of dataset
+    filename = model.__class__.__name__ + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # TODO: print model used
     print('Storing Results in \"' + filename + '\"')
-    df = pd.DataFrame(numArr)
+    df = pd.DataFrame(numArr) # Initializes the array
     
-    print('Iterating through dataset of size ', totalRuns)
-    print(model)
+    print('Iterating through dataset of size', datasetSize)
+    print('Starting...')
     for batch in fool_loader: # Loads all batches in loader
-        for image in batch[0]: # Loads all images in batch
-            r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # r - perturbation vector
-            numArr[label_pert, label_orig]+=1  
-            count += 1
+        for image in batch[0]: # Loads all images in current batch
+            r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # Run deepfool on the current image and model. r - perturbation vector
+            numArr[label_pert, label_orig] += 1 # Adds 1 to wherever the fool of the actual value at the perturbed value took place
+            count += 1 
             if(count % 50 == 0): # prints and logs progress every 50 counts
-                print(count * 100 / totalRuns,'%') # progress as a percentage
-                df.to_csv(filename, index=False) 
-            if(count >= totalRuns): 
-                break #If we have gathed data for 1000 images, break the for loop
-        else: #If this for for loop completes successfully, run this
-            continue #Continue running the for loop
-        break #If the code makes it here, that means we have gathered data for 1000 images
+                print(count * 100 / datasetSize,'%') # progress as a percentage
+                df.to_csv(filename, index=False) # Export and overwrite results to the CSV
+#            if(count >= datasetSize): 
+#                break #If we have gathed data for 1000 images, break the for loop
+#        else: #If this for for loop completes successfully, run this
+#            continue #Continue running the for loop
+#        break #If the code makes it here, that means we have gathered data for 1000 images
             
     print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
     print(numArr) 
+    print('Successfully ran through' + count + 'of' + datasetSize + 'images.\nAll results stored in ' + filename)
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 if __name__ == '__main__':
@@ -107,7 +106,7 @@ if __name__ == '__main__':
     if exists('trained_model.pt'): # If model exists
         #model = TheModelClass(*args, **kwargs)
         model.load_state_dict(torch.load('trained_model.pt')) # Load it
-        print('Found and loaded existing model')
+        print('Found and loaded existing model:')
         print(model.eval())
         accuracy = test(model, test_loader)
         print('Model accuracy : %2.2f%%' % accuracy)
@@ -175,8 +174,6 @@ if __name__ == '__main__':
     example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
 #    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
-
-#    From deepfool_test.py
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
@@ -188,8 +185,12 @@ if __name__ == '__main__':
     else:
         patchedModel = model
         
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST Batch
-    
+    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST dataset   
+
+    print(fool_set)
+#    print(fool_set.__name__)
+#    print(fool_set.__class__)
+#    print(fool_set.__model__)
 
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
