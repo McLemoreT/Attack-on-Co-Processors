@@ -59,19 +59,23 @@ def test(model, test_loader):
 def getFoolData(model, test_loader):
     numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9
     count = 0
-    totalRuns = 1000 # TODO: this needs to be set to the size of the dataset, maybe len(model) ?
-    filename = time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv'
+    totalRuns = 1000 # TODO: this needs to be set to the size of the dataset, maybe len(model) ?  
+#    print(len(model))
+    print('batch index: ')
+    filename = model.__class__.__name__ + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # TODO: print model used, date, and time
+    print('Storing Results in \"' + filename + '\"')
     df = pd.DataFrame(numArr)
     
-    display('Iterating through dataset of size ', totalRuns)
+    print('Iterating through dataset of size ', totalRuns)
+    print(model)
     for batch in fool_loader: # Loads all batches in loader
         for image in batch[0]: # Loads all images in batch
             r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # r - perturbation vector
             numArr[label_pert, label_orig]+=1  
             count += 1
-            if(count % 50 == 0): # prints progress every 50 counts
+            if(count % 50 == 0): # prints and logs progress every 50 counts
                 print(count * 100 / totalRuns,'%') # progress as a percentage
-                df.to_csv(filename, index=False) # TODO: print model used, date, and time
+                df.to_csv(filename, index=False) 
             if(count >= totalRuns): 
                 break #If we have gathed data for 1000 images, break the for loop
         else: #If this for for loop completes successfully, run this
@@ -80,7 +84,6 @@ def getFoolData(model, test_loader):
             
     print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
     print(numArr) 
-    print('Results stored in \"' + filename + '\"')
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 if __name__ == '__main__':
@@ -178,7 +181,13 @@ if __name__ == '__main__':
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
     
-    patchedModel = patchIdeals(model)
+    patch = False
+
+    if(patch):
+        patchedModel = patchIdeals(model)
+    else:
+        patchedModel = model
+        
     r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST Batch
     
 
