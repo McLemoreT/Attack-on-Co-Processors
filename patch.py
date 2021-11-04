@@ -84,19 +84,19 @@ def patchIdeals(model):
 
 
 
-#    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
-#                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
-#                                  simulate=True)
+    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
+                                  simulate=True)
 
     #print(test(patched_model, test_loader))
 
 
 
-    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
-                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
-                                  sweep_duration=2,
-                                  sweep_voltage_signal_amplitude=1,
-                                  sweep_voltage_signal_frequency=0.5)
+#    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+#                                  non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
+#                                  sweep_duration=2,
+#                                  sweep_voltage_signal_amplitude=1,
+#                                  sweep_voltage_signal_frequency=0.5)
 
     #print(test(patched_model, test_loader))
     sigma = 10 #FIXME
