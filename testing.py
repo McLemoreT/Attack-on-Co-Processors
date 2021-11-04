@@ -74,11 +74,6 @@ def getFoolData(model, test_loader):
             if(count % 50 == 0): # prints and logs progress every 50 counts
                 print(count * 100 / datasetSize,'%') # progress as a percentage
                 df.to_csv(filename, index=False) # Export and overwrite results to the CSV
-#            if(count >= datasetSize): 
-#                break #If we have gathed data for 1000 images, break the for loop
-#        else: #If this for for loop completes successfully, run this
-#            continue #Continue running the for loop
-#        break #If the code makes it here, that means we have gathered data for 1000 images
             
     print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
     print(numArr) 
