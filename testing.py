@@ -60,7 +60,7 @@ def getFoolData(model, test_loader):
     numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
     count = 0 # Represents count of loops, or the image that it's currently on
     datasetSize = len(fool_set) # Length of dataset
-    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # TODO: print model used
+    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
     print('Storing Results in \"' + filename + '\"')
     df = pd.DataFrame(numArr) # Initializes the array
     
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     )
     example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
-#    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
+    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
@@ -185,12 +185,7 @@ if __name__ == '__main__':
     else:
         patchedModel = model
         
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST dataset   
-
-#    print(str(fool_set).partition('\n')[0].replace('Dataset', '').strip())
-#    print(fool_set.__name__)
-#    print(fool_set.__class__)
-#    print(fool_set.__model__)
+    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
 
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
