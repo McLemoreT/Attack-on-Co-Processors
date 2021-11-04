@@ -60,7 +60,7 @@ def getFoolData(model, test_loader):
     numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
     count = 0 # Represents count of loops, or the image that it's currently on
     datasetSize = len(fool_set) # Length of dataset
-    filename = model.__class__.__name__ + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # TODO: print model used
+    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # TODO: print model used
     print('Storing Results in \"' + filename + '\"')
     df = pd.DataFrame(numArr) # Initializes the array
     
@@ -82,7 +82,7 @@ def getFoolData(model, test_loader):
             
     print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
     print(numArr) 
-    print('Successfully ran through' + count + 'of' + datasetSize + 'images.\nAll results stored in ' + filename)
+    print('Successfully ran through', count, 'of', datasetSize, 'images.\nAll results stored in ', filename)
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 if __name__ == '__main__':
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         
     r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire MNIST dataset   
 
-    print(fool_set)
+#    print(str(fool_set).partition('\n')[0].replace('Dataset', '').strip())
 #    print(fool_set.__name__)
 #    print(fool_set.__class__)
 #    print(fool_set.__model__)
