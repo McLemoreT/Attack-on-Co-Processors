@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import argparse # For parsing arguments from command line
 import pandas as pd
 import time 
-import _thread
+import threading
 
 from deepfool import deepfool
 from patch import patchIdeals
@@ -66,8 +66,10 @@ def getFoolData(model, test_loader):
     df = pd.DataFrame(numArr) # Initializes the array
     
     print('Iterating through dataset of size', datasetSize)
+    print('Total threads:', fool_loader.num_workers)
     print('Starting...')
     for batch in fool_loader: # Loads all batches in loader
+        start_time = time.time() # Start timer
         for image in batch[0]: # Loads all images in current batch
             r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # Run deepfool on the current image and model. r - perturbation vector
             numArr[label_pert, label_orig] += 1 # Rows = Perturbed images, Columns = Original Images. Adds 1 to wherever the fool of the actual value at the perturbed value took place
@@ -75,23 +77,49 @@ def getFoolData(model, test_loader):
             if(count % 50 == 0): # prints and logs progress every 50 counts
                 print(count * 100 / datasetSize,'%') # progress as a percentage
                 df.to_csv(filename, index=False) # Export and overwrite results to the CSV
-            
+        end_time = time.time() # End timer
+        
     print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
     print(numArr) 
     print('Successfully ran through', count, 'of', datasetSize, 'images.\nAll results stored in ', filename)
+    print('Total Execution Time:', end_time - start_time  )
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 def getFoolDataMultiThread(model, test_loader):
-    numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
-    count = 0 # Represents count of loops, or the image that it's currently on
-    datasetSize = len(fool_set) # Length of dataset
-    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
-    print('Storing Results in \"' + filename + '\"')
-    df = pd.DataFrame(numArr) # Initializes the array
     
-    print('Iterating through dataset of size', datasetSize)
+    threadAmt = 2
+    thread1 = getFoolDataThread(1, "Thread-1", 1)
+    thread2 = getFoolDataThread(2, "Thread-1", 2)
+    print('Active thread count:', threading.activeCount())
+
+
+#    print('Iterating through dataset of size', datasetSize)
+#    print('Allocating', int(datasetSize / threadAmt), 'samples each for', threadAmt, 'active threads.')
     print('Starting...')
-    for batch in fool_loader: # Loads all batches in loader
+    thread1.start()
+    thread2.start()
+            
+    print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
+#    print(numArr) 
+#    print('Successfully ran through', count, 'of', datasetSize, 'images.\nAll results stored in ', filename)
+    return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
+
+class getFoolDataThread(threading.Thread):
+   def __init__(self, threadID, name, counter):
+      threading.Thread.__init__(self)
+      self.threadID = threadID
+      self.name = name
+      self.counter = counter
+   def run(self): # Runs when .start() is called
+      print ("Starting " + self.name)
+      numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
+      count = 0
+      datasetSize = len(fool_set) # Length of dataset
+      filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
+      print('Storing Results in \"' + filename + '\"')
+      df = pd.DataFrame(numArr) # Initializes the array
+
+      for batch in fool_loader: # Loads all batches in loader
         for image in batch[0]: # Loads all images in current batch
             r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # Run deepfool on the current image and model. r - perturbation vector
             numArr[label_pert, label_orig] += 1 # Adds 1 to wherever the fool of the actual value at the perturbed value took place
@@ -99,13 +127,9 @@ def getFoolDataMultiThread(model, test_loader):
             if(count % 50 == 0): # prints and logs progress every 50 counts
                 print(count * 100 / datasetSize,'%') # progress as a percentage
                 df.to_csv(filename, index=False) # Export and overwrite results to the CSV
-            
-    print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
-    print(numArr) 
-    print('Successfully ran through', count, 'of', datasetSize, 'images.\nAll results stored in ', filename)
-    return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
+      print ("Exiting " + self.name)
 
-
+    
 if __name__ == '__main__':
 
     device = torch.device('cpu' if 'cpu' in memtorch.__version__ else 'cuda')
@@ -206,7 +230,9 @@ if __name__ == '__main__':
     else:
         patchedModel = model
         
+#    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
     r, loop_i, label_orig, label_pert, pert_image = getFoolDataMultiThread(patchedModel, test_loader) # Runs the entire dataset   
+
 
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
