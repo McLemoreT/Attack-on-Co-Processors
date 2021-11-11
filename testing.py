@@ -29,10 +29,11 @@ parser.add_argument("-l", "--load_model", help="Disables automatically loading a
 parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
 
 # Non-Ideality Processing
-parser.add_argument("-nonA", "--non_ideality_A", help="Applied non-ideality A and prints separate results.", action="store_true")
-parser.add_argument("-nonB", "--non_ideality_B", help="Applied non-ideality B and prints separate results.", action="store_true")
-parser.add_argument("-nonC", "--non_ideality_C", help="Applied non-ideality C and prints separate results.", action="store_true")
-parser.add_argument("-nonD", "--non_ideality_D", help="Applied non-ideality D and prints separate results.", action="store_true")
+parser.add_argument("-D", "--nonID_DeviceFaults", help="Applies DeviceFaults nonideality and prints the results.", action="store_true")
+parser.add_argument("-E", "--nonID_Endurance", help="Applies Endurance non-ideality and prints the results.", action="store_true")
+parser.add_argument("-R", "--nonID_Retention", help="Applies Retention non-ideality and prints the results.", action="store_true")
+parser.add_argument("-F", "--nonID_FiniteConductanceStates", help="Applies FiniteConductanceStates non-ideality and prints the results.", action="store_true")
+parser.add_argument("-N", "--nonID_NonLinear", help="Applies NonLinear non-ideality and prints the results.", action="store_true")
 
 args = parser.parse_args()
 
@@ -162,8 +163,6 @@ if __name__ == '__main__':
     best_accuracy = 0
 
     train_network = True
-    #Stuff I changed
-
 
 
     if exists('trained_model.pt'): # If model exists
@@ -193,10 +192,6 @@ if __name__ == '__main__':
         accuracy = test(model, test_loader) # Will be very low, but needed for comparison improvement
         train_network = True #starts training
 
-
-
-
-    #End of stuff I changed
 
     if train_network: # general pytorch code for training network
 
@@ -241,15 +236,18 @@ if __name__ == '__main__':
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
     
-    patch = False
+    patch = True # If true, pay attention to non-ideality flags and apply them
 
     if(patch):
-        patchedModel = patchIdeals(model)
+        patchedModel = patchIdeals(model, args) # The idealities get applied to the model
     else:
-        patchedModel = model
-        
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
+        patchedModel = model # The model stays as itself
+    
+    print("Applied non-idealities:")    
+    
+#    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
 #    r, loop_i, label_orig, label_pert, pert_image = getFoolDataMultiThread(patchedModel, test_loader) # Runs the entire dataset   
+
 
 
     def clip_tensor(A, minv, maxv):
@@ -274,7 +272,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.imshow(tf(pert_image.cpu()[0])) #shows it
     plt.title(label_pert)
-    plt.subtitle("Fooled Image")
+    plt.suptitle("Fooled Image")
     plt.savefig("Image_Fooled.png") #saves to disk
     plt.show()
     
@@ -282,6 +280,6 @@ if __name__ == '__main__':
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
     plt.imshow(pixels) 
-    plt.subtitle("Original Image")
+    plt.suptitle("Original Image")
     plt.savefig("Image_Original.png")
     plt.show()

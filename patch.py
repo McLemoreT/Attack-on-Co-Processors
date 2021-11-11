@@ -12,11 +12,12 @@ from memtorch.map.Input import naive_scale
 from memtorch.map.Parameter import naive_map
 from memtorch.bh.nonideality.NonIdeality import apply_nonidealities
 
-def patchIdeals(model):
+def patchIdeals(model, args):
     reference_memristor = memtorch.bh.memristor.VTEAM
     reference_memristor_params = {'time_series_resolution': 1e-10}
     memristor = reference_memristor(**reference_memristor_params)
         
+    print("Args: ", args)
     
     patched_model = patch_model(copy.deepcopy(model),
                           memristor_model=reference_memristor,
