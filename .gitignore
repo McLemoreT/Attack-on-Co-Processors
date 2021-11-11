@@ -143,3 +143,6 @@ dmypy.json
 .bash_history/
 *.csv
 sethTest.py
+sethTest2.py
+trained_model.pt
+trained_model.pt
