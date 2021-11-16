@@ -6,9 +6,7 @@ from memtorch.mn.Module import patch_model
 from memtorch.map.Input import naive_scale
 from memtorch.map.Parameter import naive_map
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-from memtorch.utils import LoadMNIST
 import numpy as np
 import torchvision.transforms as transforms
 import copy
@@ -20,6 +18,8 @@ import pandas as pd
 import time 
 import threading
 
+from MNISTMethods import MNISTMethods
+from CIFAR10Methods import CIFAR10Methods
 from deepfool import deepfool
 from patch import patchIdeals
 
@@ -35,29 +35,15 @@ parser.add_argument("-E", "--nonID_Endurance", help="Applies Endurance non-ideal
 parser.add_argument("-R", "--nonID_Retention", help="Applies Retention non-ideality and prints the results.", action="store_true")
 parser.add_argument("-F", "--nonID_FiniteConductanceStates", help="Applies FiniteConductanceStates non-ideality and prints the results.", action="store_true")
 parser.add_argument("-N", "--nonID_NonLinear", help="Applies NonLinear non-ideality and prints the results.", action="store_true")
+parser.add_argument("-MNIST", "--MNIST", help="Uses the MNIST Dataset and models", action="store_true")
+parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and models", action="store_true")
 
 args = parser.parse_args()
 usedArgs = parser.parse_known_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5, 1)
-        self.conv2 = nn.Conv2d(20, 50, 5, 1)
-        self.fc1 = nn.Linear(4*4*50, 500)
-        self.fc2 = nn.Linear(500, 10)
 
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = F.relu(self.conv2(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*50)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
 
 def test(model, test_loader):
     correct = 0
@@ -165,14 +151,24 @@ class getFoolDataThread(threading.Thread):
         self._stop_event.set()
     
 if __name__ == '__main__':
-
+    if(args.MNIST): #selection of dataset and corresponding Net/methods
+        polyset = MNISTMethods()
+    elif(args.CIFAR10):
+        polyset = CIFAR10Methods()
+    else:
+        polyset = MNISTMethods()
+        
     device = torch.device('cpu' if 'cpu' in memtorch.__version__ else 'cuda')
     epochs = 10
     learning_rate = 1e-1
     step_lr = 5
     batch_size = 256
-    train_loader, validation_loader, test_loader = LoadMNIST(batch_size=batch_size, validation=False)
-    model = Net().to(device) # model created, some random thing
+    
+    
+    fool_set, train_loader, validation_loader, test_loader = polyset.dataReturn(batch_size) #polymorphic set initialization
+    model = polyset.returnNetToDevice(device) #polymorphic net shape call
+    modelName = polyset.getName() #return model name
+    
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     best_accuracy = 0
@@ -188,9 +184,9 @@ if __name__ == '__main__':
  #   print('Storing Results in \"' + filename + '\"')
 
 
-    if exists('trained_model.pt'): # If model exists
+    if exists(modelName): # If model exists
         #model = TheModelClass(*args, **kwargs)
-        model.load_state_dict(torch.load('trained_model.pt')) # Load it
+        model.load_state_dict(torch.load(modelName)) # Load it
         print('Found and loaded existing model:')
         print(model.eval())
         accuracy = test(model, test_loader)
@@ -236,19 +232,13 @@ if __name__ == '__main__':
             accuracy = test(model, test_loader)
             print('%2.2f%%' % accuracy)
             if accuracy > best_accuracy:
-                torch.save(model.state_dict(), 'trained_model.pt')
+                torch.save(model.state_dict(), modelName)
                 best_accuracy = accuracy
 
 
-    model = Net().to(device)
-    model.load_state_dict(torch.load('trained_model.pt'), strict=False)
+    model = polyset.returnNetToDevice(device) #polymorphic net shape call
+    model.load_state_dict(torch.load(modelName), strict=False)
 
-
-
-    transform = transforms.Compose([transforms.ToTensor()])
-    fool_set = torchvision.datasets.MNIST(
-        root="data", train=False, transform=transform, download=True
-    )
     fool_loader = torch.utils.data.DataLoader(
         fool_set, batch_size=100, shuffle=False, num_workers=2
     )
@@ -259,6 +249,7 @@ if __name__ == '__main__':
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
     
+
     patch = True # If true, pay attention to non-ideality flags and apply them
 
     if(patch):
@@ -300,7 +291,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.imshow(tf(pert_image.cpu()[0])) #shows it
     plt.title(label_pert)
-    plt.suptitle("Fooled Image")
+    plt.subtitle("Fooled Image")
     plt.savefig("Image_Fooled.png") #saves to disk
     plt.show()
     
@@ -308,6 +299,6 @@ if __name__ == '__main__':
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
     plt.imshow(pixels) 
-    plt.suptitle("Original Image")
+    plt.subtitle("Original Image")
     plt.savefig("Image_Original.png")
     plt.show()

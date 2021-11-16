@@ -97,10 +97,10 @@ def patchIdeals(model, args):
     #print(test(patched_model, test_loader))
     sigma = 10 #FIXME
 
-    reference_memristor = memtorch.bh.memristor.VTEAM
-    reference_memristor_params = {'time_series_resolution': 1e-10,
-                              'r_off': memtorch.bh.StochasticParameter(loc=1000, scale=200, min=2),
-                              'r_on': memtorch.bh.StochasticParameter(loc=5000, scale=sigma, min=1)}
+#    reference_memristor = memtorch.bh.memristor.VTEAM
+#    reference_memristor_params = {'time_series_resolution': 1e-10,
+#                              'r_off': memtorch.bh.StochasticParameter(loc=1000, scale=200, min=2),
+#                              'r_on': memtorch.bh.StochasticParameter(loc=5000, scale=sigma, min=1)}
 
     memristor = reference_memristor(**reference_memristor_params)
     memristor.plot_hysteresis_loop()
