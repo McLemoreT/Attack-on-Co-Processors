@@ -24,19 +24,22 @@ from deepfool import deepfool
 from patch import patchIdeals
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
+# Just use "run testing.py [arguments]" to run in python
 
 parser.add_argument("-l", "--load_model", help="Disables automatically loading and useing a trained model if found", action="store_true")
 parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
 
 # Non-Ideality Processing
-parser.add_argument("-nonA", "--non_ideality_A", help="Applies non-ideality A and prints separate results.", action="store_true")
-parser.add_argument("-nonB", "--non_ideality_B", help="Applies non-ideality B and prints separate results.", action="store_true")
-parser.add_argument("-nonC", "--non_ideality_C", help="Applies non-ideality C and prints separate results.", action="store_true")
-parser.add_argument("-nonD", "--non_ideality_D", help="Applies non-ideality D and prints separate results.", action="store_true")
+parser.add_argument("-D", "--nonID_DeviceFaults", help="Applies DeviceFaults nonideality and prints the results.", action="store_true")
+parser.add_argument("-E", "--nonID_Endurance", help="Applies Endurance non-ideality and prints the results.", action="store_true")
+parser.add_argument("-R", "--nonID_Retention", help="Applies Retention non-ideality and prints the results.", action="store_true")
+parser.add_argument("-F", "--nonID_FiniteConductanceStates", help="Applies FiniteConductanceStates non-ideality and prints the results.", action="store_true")
+parser.add_argument("-N", "--nonID_NonLinear", help="Applies NonLinear non-ideality and prints the results.", action="store_true")
 parser.add_argument("-MNIST", "--MNIST", help="Uses the MNIST Dataset and models", action="store_true")
 parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and models", action="store_true")
 
 args = parser.parse_args()
+usedArgs = parser.parse_known_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
 
@@ -114,7 +117,7 @@ class getFoolDataThread(threading.Thread):
         numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
         count = 0
         datasetSize = len(fool_set) # Length of dataset
-        filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
+        filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
         print('Storing Results in \"' + filename + '\"')
         df = pd.DataFrame(numArr) # Initializes the array
         print('BATCH AMOUNT:', fool_loader.batch_size)
@@ -158,8 +161,14 @@ if __name__ == '__main__':
     best_accuracy = 0
 
     train_network = True
-    #Stuff I changed
 
+#    print('Args: ', args)    
+#    magic = str(args).partition('\n')[0].strip().replace('Namespace(', '')
+#    str(args).partition('\n')[0].replace('=False,', '').replace('=True,', '')
+
+#    print('known args: ', vars(args))
+ #   filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + '_'.join(args) + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
+ #   print('Storing Results in \"' + filename + '\"')
 
 
     if exists(modelName): # If model exists
@@ -189,10 +198,6 @@ if __name__ == '__main__':
         accuracy = test(model, test_loader) # Will be very low, but needed for comparison improvement
         train_network = True #starts training
 
-
-
-
-    #End of stuff I changed
 
     if train_network: # general pytorch code for training network
 
@@ -231,14 +236,23 @@ if __name__ == '__main__':
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
     
-    patch = True
+
+    patch = True # If true, pay attention to non-ideality flags and apply them
 
     if(patch):
-        patchedModel = patchIdeals(model)
+        patchedModel = patchIdeals(model, args) # The non-idealities get applied to the model
     else:
-        patchedModel = model
+        patchedModel = model # The model stays as itself
         
-    r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
+    compareNonIdealities = False # If true, separate tests will be run for each non-ideality flag, both indvidually and in groups. This will usually take several hours.
+                                 # If false, a single test will be run with all flags. 
+    
+    if compareNonIdealities:
+        # Do Stuff
+        print("")
+    else:
+        r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
+        
 #    r, loop_i, label_orig, label_pert, pert_image = getFoolDataMultiThread(patchedModel, test_loader) # Runs the entire dataset   
 
 
@@ -264,7 +278,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.imshow(tf(pert_image.cpu()[0])) #shows it
     plt.title(label_pert)
-    plt.subtitle("Fooled Image")
+    plt.suptitle("Fooled Image")
     plt.savefig("Image_Fooled.png") #saves to disk
     plt.show()
     
@@ -272,6 +286,6 @@ if __name__ == '__main__':
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
     plt.imshow(pixels) 
-    plt.subtitle("Original Image")
+    plt.suptitle("Original Image")
     plt.savefig("Image_Original.png")
     plt.show()
