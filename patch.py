@@ -16,8 +16,8 @@ def patchIdeals(model, args):
     reference_memristor = memtorch.bh.memristor.VTEAM
     reference_memristor_params = {'time_series_resolution': 1e-10}
     memristor = reference_memristor(**reference_memristor_params)
-        
-    print("Args: ", args)
+    
+    nonIDs = []
     
     patched_model = patch_model(copy.deepcopy(model),
                           memristor_model=reference_memristor,
@@ -36,17 +36,17 @@ def patchIdeals(model, args):
     patched_model.tune_()
     #print(test(patched_model, test_loader))
 
-
-    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+    if args.nonID_DeviceFaults: 
+        patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.DeviceFaults],
                                   lrs_proportion=0.25,
                                   hrs_proportion=0.10,
                                   electroform_proportion=0)
-
+        nonIDs.insert(len(nonIDs), "Device Faults")
     #print(test(patched_model_, test_loader))
 
-
-    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+    if args.nonID_Endurance: 
+        patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.Endurance],
                                   x=1e4,
                                   endurance_model=memtorch.bh.nonideality.endurance_retention_models.model_endurance_retention,
@@ -59,12 +59,12 @@ def patchIdeals(model, args):
                                         "cell_size": 10,
                                         "temperature": 350,
                                   })
+        nonIDs.insert(len(nonIDs), "Endurance")
 
     #print(test(patched_model_, test_loader))
 
-
-
-    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+    if args.nonID_Retention:
+        patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.Retention],
                                   time=1e3,
                                   retention_model=memtorch.bh.nonideality.endurance_retention_models.model_conductance_drift,
@@ -72,23 +72,18 @@ def patchIdeals(model, args):
                                         "initial_time": 1,
                                         "drift_coefficient": 0.1,
                                   })
-
     #print(test(patched_model, test_loader))
 
-
-
-    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+    if args.nonID_FiniteConductanceStates: 
+        patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.FiniteConductanceStates],
                                   conductance_states=5)
-
     #print(test(patched_model, test_loader))
 
-
-
-    patched_model = apply_nonidealities(copy.deepcopy(patched_model),
+    if args.nonID_NonLinear:
+        patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
                                   simulate=True)
-
     #print(test(patched_model, test_loader))
 
 
@@ -110,5 +105,9 @@ def patchIdeals(model, args):
     memristor = reference_memristor(**reference_memristor_params)
     memristor.plot_hysteresis_loop()
     memristor.plot_bipolar_switching_behaviour()
+    
+    print("Args: ", args) # Delete Later
+    print("Selected Non-Idealities:", nonIDs) # Prints whichver non-ideality flags were passed
+    
     
     return patched_model
