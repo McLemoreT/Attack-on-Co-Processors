@@ -72,8 +72,21 @@ def getFoolData(model, test_loader):
     numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
     count = 0 # Represents count of loops, or the image that it's currently on
     datasetSize = len(fool_set) # Length of dataset
-    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
+    
+    nonIDs = ""
+    if (args.nonID_DeviceFaults):
+        nonIDs += nonIDs + "DeviceFaults_"
+    if (args.nonID_Endurance):
+        nonIDs += nonIDs + "Endurance_"
+    if (args.nonID_Retention):
+        nonIDs += nonIDs + "Retention_"
+    if (args.nonID_FiniteConductanceStates):
+        nonIDs += nonIDs + "FiniteConductanceStates_"
+    if (args.nonID_NonLinear):
+        nonIDs += nonIDs + "NonLinear_"
+    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_'  + nonIDs + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
     print('Storing Results in \"' + filename + '\"')
+
     df = pd.DataFrame(numArr) # Initializes the array
     
     print('Iterating through dataset of size', datasetSize)
@@ -131,7 +144,7 @@ class getFoolDataThread(threading.Thread):
         numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
         count = 0
         datasetSize = len(fool_set) # Length of dataset
-        filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
+        filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
         print('Storing Results in \"' + filename + '\"')
         df = pd.DataFrame(numArr) # Initializes the array
         print('BATCH AMOUNT:', fool_loader.batch_size)
@@ -237,11 +250,11 @@ if __name__ == '__main__':
         root="data", train=False, transform=transform, download=True
     )
     fool_loader = torch.utils.data.DataLoader(
-        fool_set, batch_size=100, shuffle=False, num_workers=8
+        fool_set, batch_size=100, shuffle=False, num_workers=2
     )
-    example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
 
-    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
+#    example = next(iter(fool_loader))[0][0] 
+#    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
