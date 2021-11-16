@@ -278,7 +278,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.imshow(tf(pert_image.cpu()[0])) #shows it
     plt.title(label_pert)
-    plt.suptitle("Fooled Image")
+    plt.subtitle("Fooled Image")
     plt.savefig("Image_Fooled.png") #saves to disk
     plt.show()
     
@@ -286,6 +286,6 @@ if __name__ == '__main__':
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
     plt.imshow(pixels) 
-    plt.suptitle("Original Image")
+    plt.subtitle("Original Image")
     plt.savefig("Image_Original.png")
     plt.show()
