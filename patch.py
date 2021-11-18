@@ -106,7 +106,6 @@ def patchIdeals(model, args):
     memristor.plot_hysteresis_loop()
     memristor.plot_bipolar_switching_behaviour()
     
-    print("Args: ", args) # Delete Later
     print("Selected Non-Idealities:", nonIDs) # Prints whichver non-ideality flags were passed
     
     

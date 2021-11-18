@@ -24,7 +24,8 @@ from deepfool import deepfool
 from patch import patchIdeals
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
-# Just use "run testing.py [arguments]" to run in python
+# Just use "run testing.py [arguments]" to run in spyder console
+# May need to cd to correct directory
 
 parser.add_argument("-l", "--load_model", help="Disables automatically loading and useing a trained model if found", action="store_true")
 parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
@@ -39,7 +40,6 @@ parser.add_argument("-MNIST", "--MNIST", help="Uses the MNIST Dataset and models
 parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and models", action="store_true")
 
 args = parser.parse_args()
-usedArgs = parser.parse_known_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
 
@@ -69,7 +69,7 @@ def getFoolData(model, test_loader):
     if (args.nonID_FiniteConductanceStates):
         nonIDs += nonIDs + "FiniteConductanceStates_"
     if (args.nonID_NonLinear):
-        nonIDs += nonIDs + "NonLinear_"
+        nonIDs += nonIDs + "NonLinear_" 
     filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_'  + nonIDs + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
     print('Storing Results in \"' + filename + '\"')
 
@@ -164,7 +164,6 @@ if __name__ == '__main__':
     step_lr = 5
     batch_size = 256
     
-    
     fool_set, train_loader, validation_loader, test_loader = polyset.dataReturn(batch_size) #polymorphic set initialization
     model = polyset.returnNetToDevice(device) #polymorphic net shape call
     modelName = polyset.getName() #return model name
@@ -174,15 +173,6 @@ if __name__ == '__main__':
     best_accuracy = 0
 
     train_network = True
-
-#    print('Args: ', args)    
-#    magic = str(args).partition('\n')[0].strip().replace('Namespace(', '')
-#    str(args).partition('\n')[0].replace('=False,', '').replace('=True,', '')
-
-#    print('known args: ', vars(args))
- #   filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + '_'.join(args) + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
- #   print('Storing Results in \"' + filename + '\"')
-
 
     if exists(modelName): # If model exists
         #model = TheModelClass(*args, **kwargs)
