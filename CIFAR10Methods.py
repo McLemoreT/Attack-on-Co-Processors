@@ -1,3 +1,5 @@
+
+
 # -*- coding: utf-8 -*-
 """
 Created on Mon Nov 15 19:44:01 2021
@@ -5,7 +7,6 @@ Created on Mon Nov 15 19:44:01 2021
 @author: Robbie Sunbury
 """
 from memtorch.utils import LoadCIFAR10
-import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
@@ -33,20 +34,21 @@ class CIFAR10Methods:
         class Net(nn.Module):
             def __init__(self):
                 super(Net, self).__init__()
-                self.conv1 = nn.Conv2d(3, 20, 5, 1)
-                self.conv2 = nn.Conv2d(20, 50, 5, 1)
-                self.fc1 = nn.Linear(4*4*50, 500)
-                self.fc2 = nn.Linear(500, 10)
+                self.network = nn.Sequential(
+                    nn.Conv2d(3, 32, kernel_size=3, padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+                    nn.ReLU(),
+                    nn.MaxPool2d(4, 4), # output: 64 x 16 x 16
+                    
+        
+                    nn.Flatten(), 
+                    nn.Linear(256*4*4, 512),
+                    nn.ReLU(),
+                    nn.Linear(512, 10))
         
             def forward(self, x):
-                x = F.relu(self.conv1(x))
-                x = F.max_pool2d(x, 2, 2)
-                x = F.relu(self.conv2(x))
-                x = F.max_pool2d(x, 2, 2)
-                x = x.view(-1, 4*4*50)
-                x = F.relu(self.fc1(x))
-                x = self.fc2(x)
-                return x
+                return self.network(x)
             
         net = Net()
         return net.to(device)

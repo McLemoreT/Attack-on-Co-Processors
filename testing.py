@@ -176,23 +176,26 @@ if __name__ == '__main__':
 
     if exists(modelName): # If model exists
         #model = TheModelClass(*args, **kwargs)
-        model.load_state_dict(torch.load(modelName)) # Load it
-        print('Found and loaded existing model:')
-        print(model.eval())
-        accuracy = test(model, test_loader)
-        print('Model accuracy : %2.2f%%' % accuracy)
+        
+        #        print('Found and loaded existing model:')
+        #        print(model.eval())
+        #        accuracy = test(model, test_loader)
+        #        print('Model accuracy : %2.2f%%' % accuracy)
         if args.load_model: # checks for -L argument, automatic yes if true
             print(args.load_model)
             print('Do you want to use this model?')
             response = input("Type 'yes' or 'no':")
             response = response.lower()
         else:
+			
+			
             response = 'yes' #Automatically assumes you want to use the existing model if no flag is passed
 
             
         if response == 'yes': #Checks if user wants to use existing model
             train_network = False
             print('Using loaded model')
+            model.load_state_dict(torch.load(modelName)) # Load it
         else:
             print('training new model')
             best_accuracy = accuracy
