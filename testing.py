@@ -277,6 +277,7 @@ if __name__ == '__main__':
         
     #Display perturbed image
     plt.figure()
+    plt.ion()
     plt.imshow(tf(pert_image.cpu()[0])) #shows it
     plt.suptitle("Fooled Image")
     plt.title("Perturbed Label: " + str(label_pert)) # It's supposed to be suptitle not subtitle
@@ -287,6 +288,7 @@ if __name__ == '__main__':
     #Display original image
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
+    plt.ion()
     plt.imshow(pixels) 
     plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
     plt.savefig("Image_Original.png")
