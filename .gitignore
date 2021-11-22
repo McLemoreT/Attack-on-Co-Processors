@@ -145,6 +145,5 @@ dmypy.json
 sethTest.py
 sethTest2.py
 trained_model.pt
-trained_model.pt
-trained_model.pt
 *.pt
+*.swp
