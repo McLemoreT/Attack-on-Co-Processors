@@ -236,8 +236,6 @@ if __name__ == '__main__':
         fool_set, batch_size=100, shuffle=False, num_workers=2
     )
 
-#    example = next(iter(fool_loader))[0][0] 
-#    r, loop_i, label_orig, label_pert, pert_image = deepfool(example , model) # Run a single test
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
 #    print("Perturbation Vector = ", np.linalg.norm(r))
@@ -250,25 +248,22 @@ if __name__ == '__main__':
     else:
         patchedModel = model # The model stays as itself
         
-    compareNonIdealities = False # If true, separate tests will be run for each non-ideality flag, both indvidually and in groups. This will usually take several hours.
-                                 # If false, a single test will be run with all flags. 
+    demoMode = True # If true, a full test will be run. (This could take hours)
+                                 # If false, a single image test will be run. (Better for demos) 
     
-    if compareNonIdealities:
-        # Do Stuff
-        print("")
+    if demoMode:
+        example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
+        r, loop_i, label_orig, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test
     else:
-        r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset   
+        r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset           
         
 #    r, loop_i, label_orig, label_pert, pert_image = getFoolDataMultiThread(patchedModel, test_loader) # Runs the entire dataset   
-
 
     def clip_tensor(A, minv, maxv):
         A = torch.max(A, minv*torch.ones(A.shape))
         A = torch.min(A, maxv*torch.ones(A.shape))
         return A
-    
-
-    
+     
     clip = lambda x: clip_tensor(x, 0, 1)
     
     #These are uneccessary because this set is "grayscale"
@@ -283,15 +278,17 @@ if __name__ == '__main__':
     #Display perturbed image
     plt.figure()
     plt.imshow(tf(pert_image.cpu()[0])) #shows it
-    plt.title(label_pert)
-    plt.subtitle("Fooled Image")
+    plt.suptitle("Fooled Image")
+    plt.title("Perturbed Label: " + str(label_pert)) # It's supposed to be suptitle not subtitle
     plt.savefig("Image_Fooled.png") #saves to disk
     plt.show()
+    plt.close()
     
     #Display original image
     original_image = np.array(example, dtype='float')
     pixels = original_image.reshape((28, 28))
     plt.imshow(pixels) 
-    plt.subtitle("Original Image")
+    plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
     plt.savefig("Image_Original.png")
     plt.show()
+    plt.close()
