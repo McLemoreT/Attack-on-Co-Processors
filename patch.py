@@ -107,10 +107,10 @@ def patchIdeals(model, args):
 #    reference_memristor_params = {'time_series_resolution': 1e-10,
 #                              'r_off': memtorch.bh.StochasticParameter(loc=1000, scale=200, min=2),
 #                              'r_on': memtorch.bh.StochasticParameter(loc=5000, scale=sigma, min=1)}
-
-    memristor = reference_memristor(**reference_memristor_params)
-    memristor.plot_hysteresis_loop()
-    memristor.plot_bipolar_switching_behaviour()
+    if args.verbose: #Only plot behaviour when verbose is true
+            memristor = reference_memristor(**reference_memristor_params)
+            memristor.plot_hysteresis_loop()
+            memristor.plot_bipolar_switching_behaviour()
     
     print("Selected Non-Idealities:", nonIDs) # Prints whichver non-ideality flags were passed
     
