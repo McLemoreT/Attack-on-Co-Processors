@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser() #Create parser variable for command line argu
 
 parser.add_argument("-l", "--load_model", help="Disables automatically loading and useing a trained model if found", action="store_true")
 parser.add_argument("-v", "--verbose", help="Show all additional information", action="store_true")
+parser.add_argument("-d", "--demo", help="Runs a single test instead of the full set of images", action="store_true")
 
 # Non-Ideality Processing
 parser.add_argument("-D", "--nonID_DeviceFaults", help="Applies DeviceFaults nonideality and prints the results.", action="store_true")
@@ -248,14 +249,13 @@ if __name__ == '__main__':
     else:
         patchedModel = model # The model stays as itself
         
-    demoMode = True # If true, a full test will be run. (This could take hours)
-                                 # If false, a single image test will be run. (Better for demos) 
-    
-    if demoMode:
+        
+    if (args.demo): # If true, a single image will be tested. If false, the full image database will be tested (This could take hours).
         example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
-        r, loop_i, label_orig, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test
+        r, loop_i, label_orig, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test        
     else:
-        r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset           
+        r, loop_i, label_orig, label_pert, pert_image = getFoolData(patchedModel, test_loader) # Runs the entire dataset                   
+        
         
 #    r, loop_i, label_orig, label_pert, pert_image = getFoolDataMultiThread(patchedModel, test_loader) # Runs the entire dataset   
 
