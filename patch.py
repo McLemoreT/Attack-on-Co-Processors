@@ -72,18 +72,24 @@ def patchIdeals(model, args):
                                         "initial_time": 1,
                                         "drift_coefficient": 0.1,
                                   })
+        nonIDs.insert(len(nonIDs), "Retention")
+
     #print(test(patched_model, test_loader))
 
     if args.nonID_FiniteConductanceStates: 
         patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.FiniteConductanceStates],
                                   conductance_states=5)
+        nonIDs.insert(len(nonIDs), "FiniteConductanceStates")
+
     #print(test(patched_model, test_loader))
 
     if args.nonID_NonLinear:
         patched_model = apply_nonidealities(copy.deepcopy(patched_model),
                                   non_idealities=[memtorch.bh.nonideality.NonIdeality.NonLinear],
                                   simulate=True)
+        nonIDs.insert(len(nonIDs), "NonLinear")
+
     #print(test(patched_model, test_loader))
 
 
