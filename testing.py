@@ -56,7 +56,13 @@ def test(model, test_loader):
     return 100. * float(correct) / float(len(test_loader.dataset))
 
 def getFoolData(model, test_loader):
-    numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
+    # Figuring out size of output layer
+    params = list(polyset.returnNetToDevice(device).parameters())
+    outputSize = int(str(params[len(params) - 1].size()).strip().replace('torch.Size([', '').replace('])', ''))
+    print("Output Size for this network: ", outputSize)
+    numArr = np.zeros((outputSize, outputSize)) # Empty array set to be the size of the final output layer. Compares difference between result and input
+    # For example, MNIST will initialize an empty 10x10 array set up for: columns for original images 0 - 9, and corresponding rows for perturbed images 0 - 9.
+    
     count = 0 # Represents count of loops, or the image that it's currently on
     datasetSize = len(fool_set) # Length of dataset
     

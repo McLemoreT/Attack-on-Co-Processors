@@ -147,3 +147,5 @@ sethTest2.py
 trained_model.pt
 *.pt
 *.swp
+allTestsBat.bat
+allTests.py
