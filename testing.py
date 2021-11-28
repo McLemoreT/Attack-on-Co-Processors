@@ -57,7 +57,7 @@ def test(model, test_loader):
 
 def getFoolData(model, test_loader):
     # Figuring out size of output layer
-    params = list(polyset.returnNetToDevice(device).parameters())
+    params = list(model.parameters())
     outputSize = int(str(params[len(params) - 1].size()).strip().replace('torch.Size([', '').replace('])', ''))
     print("Output Size for this network: ", outputSize)
     numArr = np.zeros((outputSize, outputSize)) # Empty array set to be the size of the final output layer. Compares difference between result and input
