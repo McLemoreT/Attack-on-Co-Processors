@@ -68,16 +68,17 @@ def getFoolData(model, test_loader):
     
     nonIDs = ""
     if (args.nonID_DeviceFaults):
-        nonIDs += nonIDs + "DeviceFaults_"
+        nonIDs += "DeviceFaults-"
     if (args.nonID_Endurance):
-        nonIDs += nonIDs + "Endurance_"
+        nonIDs += "Endurance-"
     if (args.nonID_Retention):
-        nonIDs += nonIDs + "Retention_"
+        nonIDs += "Retention-"
     if (args.nonID_FiniteConductanceStates):
-        nonIDs += nonIDs + "FiniteConductanceStates_"
+        nonIDs += "FiniteConductanceStates-"
     if (args.nonID_NonLinear):
-        nonIDs += nonIDs + "NonLinear_" 
-    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_'  + nonIDs + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
+        nonIDs += "NonLinear-" 
+    nonIDs = nonIDs[:-1] # Removes the last '-'
+    filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_'  + nonIDs + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
     print('Storing Results in \"' + filename + '\"')
 
     df = pd.DataFrame(numArr) # Initializes the array
