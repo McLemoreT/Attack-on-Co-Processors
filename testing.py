@@ -159,6 +159,9 @@ class getFoolDataThread(threading.Thread):
         self._stop_event.set()
     
 if __name__ == '__main__':
+    
+    start_time = time.time()
+    
     if(args.MNIST): #selection of dataset and corresponding Net/methods
         polyset = MNISTMethods()
     elif(args.CIFAR10):
@@ -303,3 +306,7 @@ if __name__ == '__main__':
         plt.savefig("Image_Original.png")
         plt.show()
         plt.close()
+
+    end_time = time.time()
+    print("Time taken: ", end_time - start_time)
+    
