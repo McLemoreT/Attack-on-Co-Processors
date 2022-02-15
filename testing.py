@@ -157,7 +157,53 @@ class getFoolDataThread(threading.Thread):
         
     def stop(self):
         self._stop_event.set()
+        
+def goodPerturb(model, patchedModel):
+    print("Are the models the same?")
+    print(model)
+    print("-------------------")
+    print(patchedModel)
+    print(patchedModel == model)
+    example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
+    r, loop_i, label_orig, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
+    actual_class = label_orig
+    finished = False
+    count = 0
     
+    while not finished:
+        
+        f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        I = (np.array(f_image)).flatten().argsort()[::-1]
+        I = I[0:10]
+        label_software = I[0]
+        
+        print(pert_image)
+        f_image = patchedModel.forward(Variable(torch.flatten(pert_image, end_dim=1)[None, :, :, :], requires_grad=True)).data.cpu().numpy().flatten()
+        I = (np.array(f_image)).flatten().argsort()[::-1]
+        I = I[0:10]
+        label_memristor = I[0] 
+        
+        
+        if (actual_class == label_software) & (actual_class != label_memristor):
+            finished = True
+        else:
+            r, loop_i, label_orig, label_pert, pert_image = deepfool(pert_image, patchedModel)
+            count = count + 1
+    print("Test complete")
+    print("This image was originally classified as" + str(actual_class))
+    print("The software network thinks it's " + str(label_software))
+    print("The memristor network thinks it's " + str(label_memristor))
+    
+    plt.figure()
+    plt.ion()
+    plt.imshow(pert_image.reshape((28, 28))) #shows it
+    plt.suptitle("Perfectly Fooled Image")
+    plt.title("Perturbed Label: " + str(label_pert) + "Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
+    plt.show()
+    plt.close()
+    print(count)
+    
+  
 if __name__ == '__main__':
     
     start_time = time.time()
@@ -309,4 +355,8 @@ if __name__ == '__main__':
 
     end_time = time.time()
     print("Time taken: ", end_time - start_time)
+    
+    #New test functions for Tyler's method
+    
+    goodPerturb(model, patchedModel)
     
