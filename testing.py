@@ -43,7 +43,7 @@ parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and 
 args = parser.parse_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
-
+# Comment out for random images + perturbations
 
 
 def test(model, test_loader):
@@ -245,7 +245,7 @@ if __name__ == '__main__':
 
     fool_loader = torch.utils.data.DataLoader(
         fool_set, batch_size=100, shuffle=False, num_workers=2
-    )
+    ) # For random images + perturbations, turn shuffle = True
 
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
@@ -290,8 +290,8 @@ if __name__ == '__main__':
         plt.figure()
         plt.ion()
         plt.imshow(tf(pert_image.cpu()[0])) #shows it
-        plt.suptitle("Fooled Image")
-        plt.title("Perturbed Label: " + str(label_pert)) # It's supposed to be suptitle not subtitle
+        plt.suptitle("Fooled (Perturbed) Image")
+        plt.title("Classification: " + str(label_pert)) # It's supposed to be suptitle not subtitle
         plt.savefig("Image_Fooled.png") #saves to disk
         plt.show()
         plt.close()
@@ -303,6 +303,7 @@ if __name__ == '__main__':
         plt.ion()
         plt.imshow(pixels) 
         plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
+        plt.title("Classification: " + str(label_orig))
         plt.savefig("Image_Original.png")
         plt.show()
         plt.close()
