@@ -149,3 +149,5 @@ trained_model.pt
 *.swp
 allTestsBat.bat
 allTests.py
+Clinic/resources
+
