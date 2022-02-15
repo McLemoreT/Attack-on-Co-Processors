@@ -43,7 +43,7 @@ parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and 
 args = parser.parse_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
-
+# Comment out for random images + perturbations
 
 
 def test(model, test_loader):
@@ -103,60 +103,7 @@ def getFoolData(model, test_loader):
     print('Total Execution Time:', end_time - start_time  )
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
-def getFoolDataMultiThread(model, test_loader):
-    
-    threadAmt = 2
-    thread1 = getFoolDataThread(1, "Thread-1", 1)
-    thread2 = getFoolDataThread(2, "Thread-2", 2)
-    print('Active thread count:', threading.activeCount())
 
-
-#    print('Iterating through dataset of size', datasetSize)
-#    print('Allocating', int(datasetSize / threadAmt), 'samples each for', threadAmt, 'active threads.')
-    print('Starting...')
-    thread1.start()
-    thread2.start()
-            
-    thread1.join()
-    thread2.join()
-    print('Displaying Results: Column = Original Image, Row = Matched Perturbed Image')
-
-#    print(numArr) 
-#    print('Successfully ran through', count, 'of', datasetSize, 'images.\nAll results stored in ', filename)
-    return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
-
-class getFoolDataThread(threading.Thread):
-    def __init__(self, threadID, name, counter):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.name = name
-        self.counter = counter
-        self._stop_event = threading.Event()
-        
-    def run(self): # Runs when .start() is called
-        print ("Starting " + self.name)
-        numArr = np.zeros((10, 10)) # Empty 10x10 array set up for: columns for original images 0 - 9, and corresponding columns for perturbed images 0 - 9. TODO: Make this automatically adjust instead of 10x10
-        count = 0
-        datasetSize = len(fool_set) # Length of dataset
-        filename = str(fool_set).partition('\n')[0].replace('Dataset', '').strip() + '_' + time.strftime("%m-%d-%Y_%H.%M.%S") + '.csv' # File saved is "Dataset Name_Date_Time"
-        print('Storing Results in \"' + filename + '\"')
-        df = pd.DataFrame(numArr) # Initializes the array
-        print('BATCH AMOUNT:', fool_loader.batch_size)
-
-        for batch in fool_loader: # Loads all batches in loader
-            print('IMAGE AMOUNT:', len(batch))
-            for image in batch[0]: # Loads all images in current batch
-                r, loop_i, label_orig, label_pert, pert_image = deepfool(image, model) # Run deepfool on the current image and model. r - perturbation vector
-                numArr[label_pert, label_orig] += 1 # Adds 1 to wherever the fool of the actual value at the perturbed value took place
-                count += 1 
-                if(count % 50 == 0): # prints and logs progress every 50 counts
-                    print(count * 100 / datasetSize,'%') # progress as a percentage
-                    df.to_csv(filename, index=False) # Export and overwrite results to the CSV
-                    break
-        print ("Exiting " + self.name)
-        
-    def stop(self):
-        self._stop_event.set()
         
 def goodPerturb(model, patchedModel):
     print("Are the models the same?")
@@ -202,6 +149,7 @@ def goodPerturb(model, patchedModel):
     plt.show()
     plt.close()
     print(count)
+
     
   
 if __name__ == '__main__':
@@ -291,7 +239,7 @@ if __name__ == '__main__':
 
     fool_loader = torch.utils.data.DataLoader(
         fool_set, batch_size=100, shuffle=False, num_workers=2
-    )
+    ) # For random images + perturbations, turn shuffle = True
 
 #    print("Original label = ", label_orig)
 #    print("Perturbed label = ", label_pert)
@@ -336,8 +284,8 @@ if __name__ == '__main__':
         plt.figure()
         plt.ion()
         plt.imshow(tf(pert_image.cpu()[0])) #shows it
-        plt.suptitle("Fooled Image")
-        plt.title("Perturbed Label: " + str(label_pert)) # It's supposed to be suptitle not subtitle
+        plt.suptitle("Fooled (Perturbed) Image")
+        plt.title("Classification: " + str(label_pert)) # It's supposed to be suptitle not subtitle
         plt.savefig("Image_Fooled.png") #saves to disk
         plt.show()
         plt.close()
@@ -349,6 +297,7 @@ if __name__ == '__main__':
         plt.ion()
         plt.imshow(pixels) 
         plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
+        plt.title("Classification: " + str(label_orig))
         plt.savefig("Image_Original.png")
         plt.show()
         plt.close()
