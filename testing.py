@@ -105,50 +105,81 @@ def getFoolData(model, test_loader):
 
 
         
-def goodPerturb(model, patchedModel):
-    print("Are the models the same?")
-    print(model)
-    print("-------------------")
-    print(patchedModel)
-    print(patchedModel == model)
-    example = next(iter(fool_loader))[0][0] #TODO: This may not be correct
+def goodPerturb(model, patchedModel, example):
+   
     r, loop_i, label_orig, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
-    actual_class = label_orig
+    actual_class = label_orig #Store the original label in another variable just incase it gets overwritten
     finished = False
-    count = 0
+    count = 1 #Number of iterations it took to find an answer
+    hash_val = hash(example)#Hash of the image that we are testing. Mostly for debug purposes
     
-    while not finished:
-        
+    #Uncomment this to show each image that is handled by this method
+    # plt.figure()
+    # plt.ion()
+    # plt.imshow(example.reshape((28, 28))) #shows it
+    # plt.suptitle("Example")
+    # plt.title("Label is: " + str(label_orig)) # It's supposed to be suptitle not subtitle
+    # plt.show()
+    # plt.close()
+    
+    #TODO: Convert this into a while loop that uses runs until count hits its 
+    #limit, and use break or return leave the loop when finished
+    while not finished: #Continue this while loop until we give up or find the answer
+        #Run the perturbed image through the software model
         f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        
+        #These just get the classifications
         I = (np.array(f_image)).flatten().argsort()[::-1]
         I = I[0:10]
         label_software = I[0]
         
-        print(pert_image)
+
+        #Run the perturbed image through the memristor model
         f_image = patchedModel.forward(Variable(torch.flatten(pert_image, end_dim=1)[None, :, :, :], requires_grad=True)).data.cpu().numpy().flatten()
+        
+        #These just get the classifications
         I = (np.array(f_image)).flatten().argsort()[::-1]
         I = I[0:10]
         label_memristor = I[0] 
         
+        if label_software != actual_class:#If the software model misclassified the image
+            count = 99999#Set count to (basically) infinity
+            
+            #All this stuff below should be consolidated to happen outside the 
+            #While loop, and we should use a break to leave the loop
+            plt.figure()
+            plt.ion()
+            plt.imshow(pert_image.reshape((28, 28))) #shows it
+            plt.suptitle("Perfectly Fooled Image")
+            plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
+            plt.show()
+            plt.close()
+            return actual_class, label_software, label_memristor, count, hash_val
         
+        #Basically, are we in the "Good place"?
         if (actual_class == label_software) & (actual_class != label_memristor):
-            finished = True
+            finished = True#If we are, set finished to true
         else:
-            r, loop_i, label_orig, label_pert, pert_image = deepfool(pert_image, patchedModel)
-            count = count + 1
-    print("Test complete")
-    print("This image was originally classified as" + str(actual_class))
+            #If we aren't, generate a new perturbed image
+            r, loop_i, label_orig, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
+            count = count + 1#Increase the number of iterations by 1
+        #TODO: because we iterate before checking how many times we've iterated
+        #This will actually only iterate 49 times
+        if count == 50:#If we've iterated 50 times
+            return actual_class, label_software, label_memristor, count, hash_val
+    print("This image was originally classified as " + str(actual_class))
     print("The software network thinks it's " + str(label_software))
     print("The memristor network thinks it's " + str(label_memristor))
     
-    plt.figure()
-    plt.ion()
-    plt.imshow(pert_image.reshape((28, 28))) #shows it
-    plt.suptitle("Perfectly Fooled Image")
-    plt.title("Perturbed Label: " + str(label_pert) + "Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
-    plt.show()
-    plt.close()
+    # plt.figure()
+    # plt.ion()
+    # plt.imshow(pert_image.reshape((28, 28))) #shows it
+    # plt.suptitle("Perfectly Fooled Image")
+    # plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
+    # plt.show()
+    # plt.close()
     print(count)
+    return actual_class, label_software, label_memristor, count, hash_val
 
     
   
@@ -307,5 +338,31 @@ if __name__ == '__main__':
     
     #New test functions for Tyler's method
     
-    goodPerturb(model, patchedModel)
+    #goodPerturb(model, patchedModel)
     
+    counter = 0
+    good_data = []
+    new_loader = torch.utils.data.DataLoader(
+        fool_set, batch_size=100, shuffle=True, num_workers=8
+    )
+    while counter < 500:
+        example = next(iter(new_loader))[0][0] #TODO: This may not be correct
+        good_data.append(goodPerturb(model, patchedModel, example))
+        counter = counter + 1
+        next(iter(fool_loader))[0][0]
+        
+#    correct = 0
+#    for batch_idx, (data, target) in enumerate(test_loader):
+#        output = model(data.to(device))
+#        pred = output.data.max(1)[1]
+#        correct += pred.eq(target.to(device).data.view_as(pred)).cpu().sum()
+
+#Actual value, software value, memristor value, count
+    lines = []
+    for row in good_data:
+        lines.append(' '.join(str(x) for x in row))
+    print('\n'.join(lines))
+    #next(iter(fool_loader))[0][0]
+    pd.DataFrame(good_data).to_csv("Good_Data.csv", index=False)
+        
+        
