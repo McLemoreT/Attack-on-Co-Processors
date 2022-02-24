@@ -124,7 +124,8 @@ def goodPerturb(model, patchedModel, example):
     
     #TODO: Convert this into a while loop that uses runs until count hits its 
     #limit, and use break or return leave the loop when finished
-    while not finished: #Continue this while loop until we give up or find the answer
+    #Continue this while loop until we give up or find the answer
+    for count in range(1,50):
         #Run the perturbed image through the software model
         f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         
@@ -134,13 +135,7 @@ def goodPerturb(model, patchedModel, example):
         label_software = I[0]
         
 
-        #Run the perturbed image through the memristor model
-        f_image = patchedModel.forward(Variable(torch.flatten(pert_image, end_dim=1)[None, :, :, :], requires_grad=True)).data.cpu().numpy().flatten()
-        
-        #These just get the classifications
-        I = (np.array(f_image)).flatten().argsort()[::-1]
-        I = I[0:10]
-        label_memristor = I[0] 
+
         
         if label_software != actual_class:#If the software model misclassified the image
             count = 99999#Set count to (basically) infinity
@@ -164,7 +159,6 @@ def goodPerturb(model, patchedModel, example):
             r, loop_i, label_orig, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
             count = count + 1#Increase the number of iterations by 1
         #TODO: because we iterate before checking how many times we've iterated
-        #This will actually only iterate 49 times
         if count == 50:#If we've iterated 50 times
             return actual_class, label_software, label_memristor, count, hash_val
     print("This image was originally classified as " + str(actual_class))
@@ -308,7 +302,7 @@ if __name__ == '__main__':
     tf = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), #because grayscale
         transforms.Lambda(clip),
         transforms.ToPILImage(),
-        transforms.CenterCrop(28)])
+        transforms.CenterCrop(32)])
         
     #Display perturbed image
     if args.verbose:
@@ -323,10 +317,10 @@ if __name__ == '__main__':
     
     #Display original image
     original_image = np.array(example, dtype='float')
-    pixels = original_image.reshape((28, 28))
-    if args.verbose:
+    pixels = original_image.reshape((32, 32))
+    if True:
         plt.ion()
-        plt.imshow(pixels) 
+        plt.imshow(original_image) 
         plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
         plt.title("Classification: " + str(label_orig))
         plt.savefig("Image_Original.png")
