@@ -105,10 +105,9 @@ def getFoolData(model, test_loader):
 
 
         
-def goodPerturb(model, patchedModel, example):
+def goodPerturb(model, patchedModel, example, actual_class):
    
-    r, loop_i, label_orig, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
-    actual_class = label_orig #Store the original label in another variable just incase it gets overwritten
+    r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
     finished = False
     count = 1 #Number of iterations it took to find an answer
     hash_val = hash(example)#Hash of the image that we are testing. Mostly for debug purposes
@@ -139,6 +138,7 @@ def goodPerturb(model, patchedModel, example):
         
         if label_software != actual_class:#If the software model misclassified the image
             count = 99999#Set count to (basically) infinity
+            label_memristor = ""
             
             #All this stuff below should be consolidated to happen outside the 
             #While loop, and we should use a break to leave the loop
@@ -156,7 +156,7 @@ def goodPerturb(model, patchedModel, example):
             finished = True#If we are, set finished to true
         else:
             #If we aren't, generate a new perturbed image
-            r, loop_i, label_orig, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
+            r, loop_i, label_memristor, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
             count = count + 1#Increase the number of iterations by 1
         #TODO: because we iterate before checking how many times we've iterated
         if count == 50:#If we've iterated 50 times
@@ -316,16 +316,16 @@ if __name__ == '__main__':
         plt.close()
     
     #Display original image
-    original_image = np.array(example, dtype='float')
-    pixels = original_image.reshape((32, 32))
-    if True:
-        plt.ion()
-        plt.imshow(original_image) 
-        plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
-        plt.title("Classification: " + str(label_orig))
-        plt.savefig("Image_Original.png")
-        plt.show()
-        plt.close()
+    # original_image = np.array(example, dtype='float')
+    # pixels = original_image.reshape((32, 32))
+    # if True:
+    #     plt.ion()
+    #     plt.imshow(original_image) 
+    #     plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
+    #     plt.title("Classification: " + str(label_orig))
+    #     plt.savefig("Image_Original.png")
+    #     plt.show()
+    #     plt.close()
 
     end_time = time.time()
     print("Time taken: ", end_time - start_time)
@@ -339,17 +339,12 @@ if __name__ == '__main__':
     new_loader = torch.utils.data.DataLoader(
         fool_set, batch_size=100, shuffle=True, num_workers=8
     )
-    while counter < 500:
-        example = next(iter(new_loader))[0][0] #TODO: This may not be correct
-        good_data.append(goodPerturb(model, patchedModel, example))
-        counter = counter + 1
-        next(iter(fool_loader))[0][0]
-        
-#    correct = 0
-#    for batch_idx, (data, target) in enumerate(test_loader):
-#        output = model(data.to(device))
-#        pred = output.data.max(1)[1]
-#        correct += pred.eq(target.to(device).data.view_as(pred)).cpu().sum()
+    while counter < 5: #Number of batches to go through
+        images, label = next(iter(new_loader)) #A loader iterator returns a tensor of images, and their
+                                                #labels
+        for i in range(0, len(label)):
+            good_data.append(goodPerturb(model, patchedModel, images[i], label[i]))
+    
 
 #Actual value, software value, memristor value, count
     lines = []
