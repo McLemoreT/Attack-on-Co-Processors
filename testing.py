@@ -153,7 +153,7 @@ def goodPerturb(model, patchedModel, example, actual_class):
         
         #Basically, are we in the "Good place"?
         if (actual_class == label_software) & (actual_class != label_memristor):
-            finished = True#If we are, set finished to true
+            return actual_class, label_software, label_memristor, count, hash_val
         else:
             #If we aren't, generate a new perturbed image
             r, loop_i, label_memristor, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
