@@ -9,9 +9,14 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import _thread
+
+from PIL import Image
+
+import torchvision
 
 import math
-class test:
+class quarry:
     
     def editImage(location, diff, image): #location is location list
         #diff is distance to perturb 
@@ -21,39 +26,7 @@ class test:
             image[0][0][cord[1]][cord[0]] = image[0][0][cord[1]][cord[0]] + diff 
             
         return image
-    
-    def iterateTensor(Tensor, location):
-         return True   
-    # def binaryConverter(number):
-    #     div = 2
-    #     exp = math.ceil(math.log(number,2))#Max bit width of the number
-    #     output = [0]
-    #     while exp >= 0:
-    #         if(number - (div**exp) >= 0):
-    #             output = np.append(output,exp)
-    #             if(number - (div**exp) == 0):
-    #                 return np.delete(output,0)
-    #             number = number - (div**exp)
-    #         exp = exp - 1
-    #     return(np.delete(output,0))
-    
-    # def getCoordinates(edit_list,image):
-    #     arr = np.zeros((np.size(edit_list),2)) #Initialize array to correct size. Just use the edit list to make this
-    #     width = image.size(dim=2) #Subtract 1 because we are counting 0 as the first number
-    #     length = image.size(dim=3)
-    #     j = 0
-    #     for index in edit_list:#Iterate through the list of pixels to edit
-    #         x = 0
-    #         y = 0
-    #         i = 2**index
-    #         while(i > width):
-    #             i = i - width
-    #             y = y + 1
-    #         x = i
-    #         arr[j][0] = x
-    #         arr[j][1] = y
-    #         j = j + 1
-    #     return arr.astype(int)
+
     
     def binaryString(number):
         return format(number, 'b') #Convert an into to a string of 0's and 1's
@@ -73,17 +46,27 @@ class test:
                 i = i + 1
             itter = itter + 1
         return arr.astype(int)
+    
+    def thread_test(number, test_tensor):
+            binstring = quarry.binaryString( math.floor((2**10)/100*number))
             
+            cords = quarry.makeCoordinates(binstring, test_tensor)
+            newtest = test_tensor.clone().detach()
+            return quarry.editImage(cords, 0.5, newtest)
             
             
 
     def displayImage (image): #Just a quick function to display an image
          plt.figure()
-         plt.ion()
          plt.imshow(image.reshape((image.size(dim=2), image.size(dim=2)))) #shows it
-         plt.suptitle("Example")
          plt.show()
          plt.close()
+         
+    def saveImage (image, modifier):
+        name = "images/" + str(modifier) + ".png"
+        plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
+
+
          
         
         
@@ -279,19 +262,42 @@ if __name__ == '__main__': #Basically everything here is just test functions
     # test.displayImage(test_tensor)
     
     start = time.time()
-    number = 1
+    number = 333
     
-    while number < 100:
+    while number < 10000:
         
-        binstring = test.binaryString( math.floor((2**10)/100*number))
-        cords = test.makeCoordinates(binstring, test_tensor)
+        
+        binstring = quarry.binaryString( number)
+        cords = quarry.makeCoordinates(binstring, test_tensor)
         newtest = test_tensor.clone().detach()
-        test.editImage(cords, 0.5, newtest)
-        test.displayImage(newtest)
+        quarry.editImage(cords, 0.5, newtest)
+        #test.saveImage(newtest, number)        
+        
+        name = "images/" + str(number) + ".png"
+        plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
+        
+
+        
+        #test.displayImage(newtest)
+        
+        #_thread.start_new_thread(test.thread_test, (number, test_tensor))
+        #test.thread_test(number, test_tensor)
+        
+        #Threading test 1
+        #_thread.start_new_thread(test.editImage , (test.makeCoordinates(binstring, test_tensor), 0.5, test_tensor.clone().detach()))
+        
+        #Display image threaded
+        #test.displayImage(test.editImage(test.makeCoordinates(binstring, test_tensor), 0.5, test_tensor.clone().detach()))
+        
         number = number + 1
-    
+
+        
+        
+    plt.close()
     end = time.time()
-    print(end - start)
+    timer = end - start
+    print(timer)
+    
     
     # test.displayImage(small)
     # edits = test.binaryConverter(16)
