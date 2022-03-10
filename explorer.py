@@ -262,7 +262,7 @@ if __name__ == '__main__': #Basically everything here is just test functions
     # test.displayImage(test_tensor)
     
     start = time.time()
-    number = 333
+    number = 1
     
     while number < 10000:
         
