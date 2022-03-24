@@ -179,7 +179,7 @@ tensor = torch.FloatTensor([[[[ 0.0000e+00,  0.0000e+00,  3.6297e-04,  5.9150e-0
                 -2.3539e-04,  2.9761e-05, -1.7513e-04,  0.0000e+00,  0.0000e+00,
                 0.0000e+00,  0.0000e+00,  0.0000e+00]]]])
 
-def torchutils(tensor):
+def getNormParam(tensor):
     
     array = tensor.numpy()
     
