@@ -10,7 +10,7 @@ import numpy as np
 def bbore(model, img, stride, imgWidth, imgHeight):
     
     goodSet = [] #Empty set initialization of "good" imaages
-    MAXVAL = 1.0728 #TODO: FIXME
+    MAXVAL = 1.0728 + 0.001 #TODO: FIXME
 
     for i in range(0, int(imgWidth*imgHeight/stride)):
         #iterate over all "zones"
@@ -19,15 +19,15 @@ def bbore(model, img, stride, imgWidth, imgHeight):
         pertR = np.zeros(img.cpu().numpy().shape) #reset in between "bores"
 
         for j in range(i*stride, (i+1)*stride): #Iterate through different sets of bores with this head size
-            pertR[0][0][int(j/imgHeight)][j%imgHeight] = 1 #TODO: Replace with drill size
+            pertR[0][0][int(j/imgHeight)][j%imgHeight] = 0.1 #TODO: Replace with drill size
 
-            while boreImg.max() < MAXVAL: #While inside the bounds
+            while boreImg.max() <= MAXVAL: #While inside the bounds
                     boreImg = boreImg + pertR #Drill "deeper"
         
                     if(False):
                         break
                     else:
-                        goodSet.add(boreImg)
+                        goodSet.append(boreImg)
 
     return goodSet
 
@@ -210,4 +210,4 @@ if __name__ == '__main__':
                 -2.3539e-04,  2.9761e-05, -1.7513e-04,  0.0000e+00,  0.0000e+00,
                 0.0000e+00,  0.0000e+00,  0.0000e+00]]]])
     
-    print(bbore([], test_tensor, stride=2, imgWidth=28, imgHeight=28))
+    print(len(bbore([], test_tensor, stride=2, imgWidth=28, imgHeight=28)))
