@@ -195,8 +195,8 @@ def torchutils(tensor):
     #print("Iteration = ",iteration)
     
     array_util = [Max, Min, iteration]
-    print("Array = ",array_util)
+    #print("Array = ",array_util)
     
-    return Max, Min, iteration, array_util;
+    return array_util;
 
 torchutils(tensor)
