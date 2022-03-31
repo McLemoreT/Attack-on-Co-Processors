@@ -15,6 +15,7 @@ from PIL import Image
 
 import torchvision
 
+
 import math
 class quarry:
     
@@ -46,14 +47,6 @@ class quarry:
                 i = i + 1
             itter = itter + 1
         return arr.astype(int)
-    
-    def thread_test(number, test_tensor):
-            binstring = quarry.binaryString( math.floor((2**10)/100*number))
-            
-            cords = quarry.makeCoordinates(binstring, test_tensor)
-            newtest = test_tensor.clone().detach()
-            return quarry.editImage(cords, 0.5, newtest)
-            
             
 
     def displayImage (image): #Just a quick function to display an image
@@ -65,7 +58,13 @@ class quarry:
     def saveImage (image, modifier):
         name = "images/" + str(modifier) + ".png"
         plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
-
+    
+    def getPerturbedImage (image, number):
+        numberstring = quarry.binaryString(number)
+        #params = TorchUtils.getNormParam(image) #Max, Min, Iteration
+        #location = quarry.makeCoordinates(numberstring, image)
+        #quarry.editImage(location, params[2], image)
+        #return image
 
          
         
@@ -267,11 +266,14 @@ if __name__ == '__main__': #Basically everything here is just test functions
     while number < 10000:
         
         
-        binstring = quarry.binaryString( number)
-        cords = quarry.makeCoordinates(binstring, test_tensor)
+        # binstring = quarry.binaryString( number)
+        # cords = quarry.makeCoordinates(binstring, test_tensor)
+        # newtest = test_tensor.clone().detach()
+        # quarry.editImage(cords, 0.5, newtest)
+        # #test.saveImage(newtest, number)
+        
         newtest = test_tensor.clone().detach()
-        quarry.editImage(cords, 0.5, newtest)
-        #test.saveImage(newtest, number)        
+        quarry.getPerturbedImage(newtest, number)
         
         name = "images/" + str(number) + ".png"
         plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
