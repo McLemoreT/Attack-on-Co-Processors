@@ -210,11 +210,11 @@ def QuarrySave(image, iterations, starting_number, model, patchedModel,
                    bin_string = explorer.Quarry.binaryString(x)
                    cords = explorer.Quarry.makeCoordinates(bin_string, image)
                    #Clone and detach old image
-                   new_image = image.clone().detach()x
+                   new_image = image.clone().detach()
                    #Generate new image
                    new_image = test.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
                    
-                   if(isGoodPlace()):
+                   if(isGoodPlace(model, patchedModel, image, actual_class)):
                        #save
                        name = "images/" + str(x) + ".png"
                        plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
