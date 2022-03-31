@@ -186,12 +186,14 @@ def isGoodPlace(label_memristor, label_software, actual_class):
          else:
             return False
         
-def QuarrySave(image, iterations, starting_number, model, patchedModel, actual_class):
+def QuarrySave(image, iterations, starting_number, model, patchedModel, 
+               actual_class, max_number = -1): #Max number defaults to -1 so we can calculate the actual max number
     #Iterations are the number of times this should run
     #Probably shouldset an upper limit when making quarry images
-    dims = image.dim();
-    max_number = image.size(dim=dims) * image.size(dim=dims - 1)
-    max_number = pow(2,max_number)
+    
+    if max_number == -1:
+        dims = image.dim();
+        max_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
     
     for x in range(starting_number, max_number, math.floor(max_number/iterations)):
                    #Generate information for new image
@@ -204,7 +206,8 @@ def QuarrySave(image, iterations, starting_number, model, patchedModel, actual_c
                    
                    if(isGoodPlace()):
                        #save
-                       1+1
+                       name = "images/" + str(x) + ".png"
+                       plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
                    else:
                        #Don't save
                        1+1
