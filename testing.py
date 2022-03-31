@@ -182,6 +182,7 @@ def goodPerturb(model, patchedModel, example, actual_class):
 
 def isGoodPlace(model, patchedModel, example, actual_class):
 
+        r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel)
         #Run the perturbed image through the software model
         f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         
@@ -228,11 +229,6 @@ def QuarrySave(image, iterations, starting_number, model, patchedModel,
                    plt.imsave(name, new_image.reshape((new_image.size(dim=dims-1), new_image.size(dim=dims))))
                    
     plt.close()
-    
-                   
-    
-    
-    explorer.Quarry.getPerturbedImage(image, number)
     
   
 if __name__ == '__main__':
@@ -372,28 +368,27 @@ if __name__ == '__main__':
         plt.savefig("Image_Fooled.png") #saves to disk
         plt.show()
         plt.close()
-    
-    #Display original image
-    # original_image = np.array(example, dtype='float')
-    # pixels = original_image.reshape((32, 32))
-    # if True:
-    #     plt.ion()
-    #     plt.imshow(original_image) 
-    #     plt.suptitle("Original Image") # It's supposed to be suptitle not subtitle
-    #     plt.title("Classification: " + str(label_orig))
-    #     plt.savefig("Image_Original.png")
-    #     plt.show()
-    #     plt.close()
 
     end_time = time.time()
     print("Time taken: ", end_time - start_time)
     
-    isGoodPlace(label_memristor, label_software, actual_class)
-    
     #New test functions for Tyler's method
     
-    #goodPerturb(model, patchedModel)
+    #Is good place test
+    counter = 0
+    isGoodPlace_Loader = torch.utils.data.DataLoader(
+        fool_set, batch_size=100, shuffle=True, num_workers=8
+    )
+    while counter < 5: #Number of batches to go through
+        images, label = next(iter(isGoodPlace_Loader)) #A loader iterator returns a tensor of images, and their
+                                                #labels
+        for i in range(0, len(label)):
+           QuarrySave(images[i], 100, 0, model, patchedModel, label[i], ending_number = 10000)
     
+    
+    
+    
+    #Good perturb test
     counter = 0
     good_data = []
     new_loader = torch.utils.data.DataLoader(
@@ -405,7 +400,7 @@ if __name__ == '__main__':
         for i in range(0, len(label)):
             good_data.append(goodPerturb(model, patchedModel, images[i], label[i]))
     
-
+#Data collected from above test
 #Actual value, software value, memristor value, count
     lines = []
     for row in good_data:
