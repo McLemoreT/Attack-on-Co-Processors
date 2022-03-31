@@ -180,7 +180,7 @@ def goodPerturb(model, patchedModel, example, actual_class):
     print(count)
     return actual_class, label_software, label_memristor, count, hash_val
 
-def isGoodPlace(label_memristor, label_software, actual_class):
+def isGoodPlace(model, patchedModel, example, actual_class):
 
         #Run the perturbed image through the software model
         f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
@@ -210,7 +210,7 @@ def QuarrySave(image, iterations, starting_number, model, patchedModel,
                    bin_string = explorer.Quarry.binaryString(x)
                    cords = explorer.Quarry.makeCoordinates(bin_string, image)
                    #Clone and detach old image
-                   new_image = image.clone().detach()
+                   new_image = image.clone().detach()x
                    #Generate new image
                    new_image = test.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
                    
