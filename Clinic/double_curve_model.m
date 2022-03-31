@@ -58,8 +58,29 @@ fplot(ax, curve_memristor);
 [randX, randY] = newImg(xmin, xmax, ymin, ymax, ax);
 %legend('show', 'Location', 'best')
 
-[POI, vec] = findClosestDirection(randX, randY, ezcurve);
-plot(ax, POI(1), POI(2), 'o', 'Color', 'black'); % Plot the point on the figure
+findClosestDirectionWacky(randX, randY, ezcurve, ax);
+
+%findClosestDirection(randX, randY, ezcurve);
+%plot(ax, POI(1), POI(2), 'o', 'Color', 'black'); % Plot the point on the figure
+
+function findClosestDirectionWacky(initX, initY, curve, ax)
+    syms x y
+    dfx = sqrt((x - initX)^2 + (curve - initY)^2)
+    D = diff(dfx)
+    simplify(D)
+    eqn = D == 0
+    dist = vpa(solve(eqn, x))
+    dist(dist~=real(dist)) = NaN
+    dist = min(dist) % find actual closest point
+    x = dist(1)
+    y = eval(curve)
+
+% look for 2nd derivative to find shortest vector, AKA min and max (just
+% find min)
+
+    plot(ax, x, y, 'o', 'Color', 'black'); % Plot the point on the figure
+
+end
 
 function [point, vector] = findClosestDirection(initX, initY, curve)
     syms x y
