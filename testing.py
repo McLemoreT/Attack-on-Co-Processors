@@ -17,11 +17,16 @@ import argparse # For parsing arguments from command line
 import pandas as pd
 import time 
 import threading
+import math
 
 from MNISTMethods import MNISTMethods
 from CIFAR10Methods import CIFAR10Methods
 from deepfool import deepfool
 from patch import patchIdeals
+
+#Our other files
+import explorer as explorer
+import TorchUtils as TorchUtils
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
 # Just use "run testing.py [arguments]" to run in spyder console
@@ -175,6 +180,46 @@ def goodPerturb(model, patchedModel, example, actual_class):
     print(count)
     return actual_class, label_software, label_memristor, count, hash_val
 
+def isGoodPlace(label_memristor, label_software, actual_class):
+         if (actual_class == label_software) & (actual_class != label_memristor):
+            return True
+         else:
+            return False
+        
+def QuarrySave(image, iterations, starting_number, model, patchedModel, actual_class):
+    #Iterations are the number of times this should run
+    #Probably shouldset an upper limit when making quarry images
+    dims = image.dim();
+    max_number = image.size(dim=dims) * image.size(dim=dims - 1)
+    max_number = pow(2,max_number)
+    
+    for x in range(starting_number, max_number, math.floor(max_number/iterations)):
+                   #Generate information for new image
+                   bin_string = explorer.Quarry.binaryString(x)
+                   cords = explorer.Quarry.makeCoordinates(bin_string, image)
+                   #Clone and detach old image
+                   new_image = image.clone().detach()
+                   #Generate new image
+                   new_image = test.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
+                   
+                   if(isGoodPlace()):
+                       #save
+                       1+1
+                   else:
+                       #Don't save
+                       1+1
+                   
+                   
+                   #Save image
+                   name = "images/" + str(x) + ".png"
+                   plt.imsave(name, new_image.reshape((new_image.size(dim=dims-1), new_image.size(dim=dims))))
+                   
+    plt.close()
+    
+                   
+    
+    
+    explorer.Quarry.getPerturbedImage(image, number)
     
   
 if __name__ == '__main__':
@@ -329,6 +374,8 @@ if __name__ == '__main__':
 
     end_time = time.time()
     print("Time taken: ", end_time - start_time)
+    
+    isGoodPlace(label_memristor, label_software, actual_class)
     
     #New test functions for Tyler's method
     
