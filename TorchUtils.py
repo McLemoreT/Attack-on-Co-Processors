@@ -183,7 +183,7 @@ def getNormParam(tensor):
     
     array = tensor.numpy()
     
-    print("Array = ",array)
+    #print("Array = ",array)
     
     Max = torch.max(tensor)
     Min = torch.min(tensor)
@@ -199,4 +199,4 @@ def getNormParam(tensor):
     
     return array_util;
 
-torchutils(tensor)
+print(getNormParam(tensor)[2])
