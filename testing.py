@@ -181,21 +181,31 @@ def goodPerturb(model, patchedModel, example, actual_class):
     return actual_class, label_software, label_memristor, count, hash_val
 
 def isGoodPlace(label_memristor, label_software, actual_class):
-         if (actual_class == label_software) & (actual_class != label_memristor):
+
+        #Run the perturbed image through the software model
+        f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        
+        #These just get the classifications
+        I = (np.array(f_image)).flatten().argsort()[::-1]
+        I = I[0:10]
+        label_software = I[0]
+
+        #Basically, are we in the "Good place"?
+        if (actual_class == label_software) & (actual_class != label_memristor):
             return True
-         else:
-            return False
+        
+        return False
         
 def QuarrySave(image, iterations, starting_number, model, patchedModel, 
-               actual_class, max_number = -1): #Max number defaults to -1 so we can calculate the actual max number
+               actual_class, ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
     #Iterations are the number of times this should run
     #Probably shouldset an upper limit when making quarry images
     
-    if max_number == -1:
+    if ending_number == -1:
         dims = image.dim();
-        max_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
+        ending_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
     
-    for x in range(starting_number, max_number, math.floor(max_number/iterations)):
+    for x in range(starting_number, ending_number, math.floor(ending_number/iterations)):
                    #Generate information for new image
                    bin_string = explorer.Quarry.binaryString(x)
                    cords = explorer.Quarry.makeCoordinates(bin_string, image)
