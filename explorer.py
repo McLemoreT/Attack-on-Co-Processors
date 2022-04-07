@@ -24,6 +24,7 @@ class quarry:
         #image is the image
         for cord in location:
             #Go to the location specified by cord in image, and add diff
+            
             image[0][0][cord[1]][cord[0]] = image[0][0][cord[1]][cord[0]] + diff 
             
         return image
@@ -38,7 +39,7 @@ class quarry:
         
         arr = np.zeros((edit_list.count('1'),2)) #Create an array is as big as the number of 1's in edit_list
         
-        width = image.size(dim=2)#Subtract 1 because we are counting 0 as the first number
+        width = image.size(dim=2)# + 1#Subtract 1 because we are counting 0 as the first number
         i = 0
         for index in edit_list:
             if(index == '1'):
@@ -262,21 +263,21 @@ if __name__ == '__main__': #Basically everything here is just test functions
     
     start = time.time()
     number = 1
-    
-    while number < 10000:
-        
-        
-        # binstring = quarry.binaryString( number)
-        # cords = quarry.makeCoordinates(binstring, test_tensor)
-        # newtest = test_tensor.clone().detach()
-        # quarry.editImage(cords, 0.5, newtest)
-        # #test.saveImage(newtest, number)
-        
+    current_num = 0
+    while number < 100000:
+        current_num = current_num + number
+        print(current_num)
+        binstring = quarry.binaryString( current_num)
+        cords = quarry.makeCoordinates(binstring, test_tensor)
         newtest = test_tensor.clone().detach()
-        quarry.getPerturbedImage(newtest, number)
+        quarry.editImage(cords, 0.5, newtest)
+        quarry.displayImage(newtest)
         
-        name = "images/" + str(number) + ".png"
-        plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
+       # newtest = test_tensor.clone().detach()
+        #quarry.getPerturbedImage(newtest, number)
+        
+        #name = "images/" + str(number) + ".png"
+        #plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
         
 
         
