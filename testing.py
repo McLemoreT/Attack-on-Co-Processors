@@ -154,18 +154,18 @@ def goodPerturb(model, patchedModel, example, actual_class):
             plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
             plt.show()
             plt.close()
-            return actual_class, label_software, label_memristor, count, hash_val
+            return actual_class, label_software, label_memristor, count, hash_val, None
         
         #Basically, are we in the "Good place"?
         if (actual_class == label_software) & (actual_class != label_memristor):
-            return actual_class, label_software, label_memristor, count, hash_val
+            return actual_class, label_software, label_memristor, count, hash_val, pert_image
         else:
             #If we aren't, generate a new perturbed image
             r, loop_i, label_memristor, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
             count = count + 1#Increase the number of iterations by 1
         #TODO: because we iterate before checking how many times we've iterated
         if count == 50:#If we've iterated 50 times
-            return actual_class, label_software, label_memristor, count, hash_val
+            return actual_class, label_software, label_memristor, count, hash_val, None
     print("This image was originally classified as " + str(actual_class))
     print("The software network thinks it's " + str(label_software))
     print("The memristor network thinks it's " + str(label_memristor))
@@ -197,36 +197,36 @@ def isGoodPlace(model, patchedModel, example, actual_class):
         
         return False
         
-def QuarrySave(image, iterations, starting_number, model, patchedModel, 
-               actual_class, ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
+def QuarrySave(image, #The image we are testing
+               iterations, #How many perturbed images are we making?
+               starting_number, #What number are we starting at for quarry?
+               model, #What is the model
+               patchedModel, #What is the memtorch model
+               actual_class, #What is the actual classification of image
+               modifier, #Naming modifier for saving the image, typically to identify the perturbed images as a subset of the original
+               ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
     #Iterations are the number of times this should run
     #Probably shouldset an upper limit when making quarry images
-    
-    if ending_number == -1:
-        dims = image.dim();
+    dims = image.dim();
+    if ending_number == -1: #If the max number isn't set, set it to the true max number
         ending_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
     
     for x in range(starting_number, ending_number, math.floor(ending_number/iterations)):
                    #Generate information for new image
-                   bin_string = explorer.Quarry.binaryString(x)
-                   cords = explorer.Quarry.makeCoordinates(bin_string, image)
+                   bin_string = explorer.quarry.binaryString(x) 
+                   cords = explorer.quarry.makeCoordinates(bin_string, image)
                    #Clone and detach old image
                    new_image = image.clone().detach()
                    #Generate new image
-                   new_image = test.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
+                   new_image = explorer.quarry.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
                    
-                   if(isGoodPlace(model, patchedModel, image, actual_class)):
+                   if(isGoodPlace(model, patchedModel, new_image, actual_class)):
                        #save
-                       name = "images/" + str(x) + ".png"
+                       name = "images/" + modifier + "---" + str(x) + ".png"
                        plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
                    else:
                        #Don't save
                        1+1
-                   
-                   
-                   #Save image
-                   name = "images/" + str(x) + ".png"
-                   plt.imsave(name, new_image.reshape((new_image.size(dim=dims-1), new_image.size(dim=dims))))
                    
     plt.close()
     
@@ -374,6 +374,7 @@ if __name__ == '__main__':
     
     #New test functions for Tyler's method
     
+    
     #Is good place test
     counter = 0
     isGoodPlace_Loader = torch.utils.data.DataLoader(
@@ -383,7 +384,11 @@ if __name__ == '__main__':
         images, label = next(iter(isGoodPlace_Loader)) #A loader iterator returns a tensor of images, and their
                                                 #labels
         for i in range(0, len(label)):
-           QuarrySave(images[i], 100, 0, model, patchedModel, label[i], ending_number = 10000)
+            actual_class, label_software, label_memristor, count, hash_val, pert_image = goodPerturb(model, patchedModel, images[i], label[i])
+           
+            if pert_image is not None:
+                pert_image = explorer.quarry.rankFix(pert_image)
+                QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
     
     
     
@@ -398,6 +403,7 @@ if __name__ == '__main__':
         images, label = next(iter(new_loader)) #A loader iterator returns a tensor of images, and their
                                                 #labels
         for i in range(0, len(label)):
+            
             good_data.append(goodPerturb(model, patchedModel, images[i], label[i]))
     
 #Data collected from above test
