@@ -6,11 +6,61 @@
 #""".
 import torch
 import numpy as np
+import testing as leTest
+import matplotlib.pyplot as plt
+import math
 
-def bbore(model, img, stride, imgWidth, imgHeight):
+def editImage(location, diff, image): #location is location list
+    #diff is distance to perturb 
+    #image is the image
+    for cord in location:
+        #Go to the location specified by cord in image, and add diff
+        image[0][0][cord[1]][cord[0]] = image[0][0][cord[1]][cord[0]] + diff 
+        
+    return image
+
+
+def binaryString(number):
+    return format(number, 'b') #Convert an into to a string of 0's and 1's
+
+def makeCoordinates(edit_list,image):
+    edit_list = edit_list [::-1] #Invert the string edit_list
+    itter = 0
+    
+    arr = np.zeros((edit_list.count('1'),2)) #Create an array is as big as the number of 1's in edit_list
+    
+    width = image.size(dim=2)#Subtract 1 because we are counting 0 as the first number
+    i = 0
+    for index in edit_list:
+        if(index == '1'):
+            arr[i][0] = itter % width
+            arr[i][1] = math.floor(itter / width)
+            i = i + 1
+        itter = itter + 1
+    return arr.astype(int)
+        
+
+def displayImage (image): #Just a quick function to display an image
+     plt.figure()
+     plt.imshow(image.reshape((image.size(dim=2), image.size(dim=2)))) #shows it
+     plt.show()
+     plt.close()
+     
+def saveImage (image, modifier):
+    name = "images/" + str(modifier) + ".png"
+    plt.imsave(name, image.reshape((image.size(dim=2), image.size(dim=2))))
+
+def getPerturbedImage (image, number):
+    numberstring = quarry.binaryString(number)
+    #params = TorchUtils.getNormParam(image) #Max, Min, Iteration
+    #location = quarry.makeCoordinates(numberstring, image)
+    #quarry.editImage(location, params[2], image)
+    #return image
+
+def bbore(model, actual_class, patchedModel, img, stride, imgWidth, imgHeight):
     
     goodSet = [] #Empty set initialization of "good" imaages
-    MAXVAL = 1.0728 + 0.001 #TODO: FIXME
+    MAXVAL = 1.0728 + 0.00000000000001 #TODO: FIXME
 
     for i in range(0, int(imgWidth*imgHeight/stride)):
         #iterate over all "zones"
@@ -24,12 +74,13 @@ def bbore(model, img, stride, imgWidth, imgHeight):
             while boreImg.max() <= MAXVAL: #While inside the bounds
                     boreImg = boreImg + pertR #Drill "deeper"
         
-                    if(False):
+                    if(leTest.isGoodPlace(model, patchedModel, boreImg, actual_class)):
                         break
                     else:
                         goodSet.append(boreImg)
 
     return goodSet
+
 
 #def genBinaryStrings(size):
 #    resultList = []
