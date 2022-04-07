@@ -33,6 +33,11 @@ class quarry:
     def binaryString(number):
         return format(number, 'b') #Convert an into to a string of 0's and 1's
     
+    def rankFix(image):
+        while(image.dim() > 3):
+            image = image[0]
+        return image
+    
     def makeCoordinates(edit_list,image):
         edit_list = edit_list [::-1] #Invert the string edit_list
         itter = 0
