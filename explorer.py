@@ -25,7 +25,7 @@ class quarry:
         for cord in location:
             #Go to the location specified by cord in image, and add diff
             
-            image[0][0][cord[1]][cord[0]] = image[0][0][cord[1]][cord[0]] + diff 
+            image[0][cord[1]][cord[0]] = image[0][cord[1]][cord[0]] + diff 
             
         return image
 
