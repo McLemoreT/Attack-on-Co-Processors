@@ -58,7 +58,7 @@ class quarry:
          
     def saveImage (image, modifier):
         name = "images/" + str(modifier) + ".png"
-        plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
+        plt.imsave(name, image.reshape((image.size(dim=2), image.size(dim=2))))
     
     def getPerturbedImage (image, number):
         numberstring = quarry.binaryString(number)
