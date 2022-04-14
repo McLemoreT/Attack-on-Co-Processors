@@ -15,7 +15,6 @@ from PIL import Image
 
 import torchvision
 import TorchUtils as TorchUtils
-from testing import isGoodPlace
 
 
 import math
@@ -89,8 +88,8 @@ class quarry:
                        new_image = image.clone().detach()
                        #Generate new image
                        new_image = quarry.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
-                       
-                       if(isGoodPlace(model, patchedModel, new_image, actual_class)):
+                       quarry.displayImage(new_image)
+                       if(TorchUtils.isGoodPlace(model, patchedModel, new_image, actual_class)):
                            #save
                            name = "images/" + modifier + "---" + str(x) + ".png"
                            plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))

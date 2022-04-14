@@ -25,6 +25,7 @@ from deepfool import deepfool
 from patch import patchIdeals
 
 #Our other files
+import tests as tests
 import explorer as explorer
 import TorchUtils as TorchUtils
 import Bore as borer
@@ -111,94 +112,87 @@ def getFoolData(model, test_loader):
 
 
         
-def goodPerturb(model, patchedModel, example, actual_class):
+# def goodPerturb(model, patchedModel, example, actual_class):
    
-    r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
-    finished = False
-    count = 1 #Number of iterations it took to find an answer
-    hash_val = hash(example)#Hash of the image that we are testing. Mostly for debug purposes
+#     r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
+#     finished = False
+#     count = 1 #Number of iterations it took to find an answer
+#     hash_val = hash(example)#Hash of the image that we are testing. Mostly for debug purposes
     
-    #Uncomment this to show each image that is handled by this method
-    # plt.figure()
-    # plt.ion()
-    # plt.imshow(example.reshape((28, 28))) #shows it
-    # plt.suptitle("Example")
-    # plt.title("Label is: " + str(label_orig)) # It's supposed to be suptitle not subtitle
-    # plt.show()
-    # plt.close()
+#     #Uncomment this to show each image that is handled by this method
+#     # plt.figure()
+#     # plt.ion()
+#     # plt.imshow(example.reshape((28, 28))) #shows it
+#     # plt.suptitle("Example")
+#     # plt.title("Label is: " + str(label_orig)) # It's supposed to be suptitle not subtitle
+#     # plt.show()
+#     # plt.close()
     
-    #TODO: Convert this into a while loop that uses runs until count hits its 
-    #limit, and use break or return leave the loop when finished
-    #Continue this while loop until we give up or find the answer
-    for count in range(1,50):
-        #Run the perturbed image through the software model
-        f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+#     #TODO: Convert this into a while loop that uses runs until count hits its 
+#     #limit, and use break or return leave the loop when finished
+#     #Continue this while loop until we give up or find the answer
+#     for count in range(1,50):
+#         #Run the perturbed image through the software model
+#         f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         
-        #These just get the classifications
-        I = (np.array(f_image)).flatten().argsort()[::-1]
-        I = I[0:10]
-        label_software = I[0]
+#         #These just get the classifications
+#         I = (np.array(f_image)).flatten().argsort()[::-1]
+#         I = I[0:10]
+#         label_software = I[0]
         
 
 
         
-        if label_software != actual_class:#If the software model misclassified the image
-            count = 99999#Set count to (basically) infinity
-            label_memristor = ""
+#         if label_software != actual_class:#If the software model misclassified the image
+#             count = 99999#Set count to (basically) infinity
+#             label_memristor = ""
             
-            #All this stuff below should be consolidated to happen outside the 
-            #While loop, and we should use a break to leave the loop
-            plt.figure()
-            plt.ion()
-            plt.imshow(pert_image.reshape((28, 28))) #shows it
-            plt.suptitle("Perfectly Fooled Image")
-            plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
-            plt.show()
-            plt.close()
-            return actual_class, label_software, label_memristor, count, hash_val, None
+#             #All this stuff below should be consolidated to happen outside the 
+#             #While loop, and we should use a break to leave the loop
+#             return actual_class, label_software, label_memristor, count, hash_val, None
         
-        #Basically, are we in the "Good place"?
-        if (actual_class == label_software) & (actual_class != label_memristor):
-            return actual_class, label_software, label_memristor, count, hash_val, pert_image
-        else:
-            #If we aren't, generate a new perturbed image
-            r, loop_i, label_memristor, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
-            count = count + 1#Increase the number of iterations by 1
-        #TODO: because we iterate before checking how many times we've iterated
-        if count == 50:#If we've iterated 50 times
-            return actual_class, label_software, label_memristor, count, hash_val, None
-    print("This image was originally classified as " + str(actual_class))
-    print("The software network thinks it's " + str(label_software))
-    print("The memristor network thinks it's " + str(label_memristor))
+#         #Basically, are we in the "Good place"?
+#         if (actual_class == label_software) & (actual_class != label_memristor):
+#             return actual_class, label_software, label_memristor, count, hash_val, pert_image
+#         else:
+#             #If we aren't, generate a new perturbed image
+#             r, loop_i, label_memristor, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
+#             count = count + 1#Increase the number of iterations by 1
+#         #TODO: because we iterate before checking how many times we've iterated
+#         if count == 50:#If we've iterated 50 times
+#             return actual_class, label_software, label_memristor, count, hash_val, None
+#     print("This image was originally classified as " + str(actual_class))
+#     print("The software network thinks it's " + str(label_software))
+#     print("The memristor network thinks it's " + str(label_memristor))
     
-    # plt.figure()
-    # plt.ion()
-    # plt.imshow(pert_image.reshape((28, 28))) #shows it
-    # plt.suptitle("Perfectly Fooled Image")
-    # plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
-    # plt.show()
-    # plt.close()
-    print(count)
-    return actual_class, label_software, label_memristor, count, hash_val
+#     # plt.figure()
+#     # plt.ion()
+#     # plt.imshow(pert_image.reshape((28, 28))) #shows it
+#     # plt.suptitle("Perfectly Fooled Image")
+#     # plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
+#     # plt.show()
+#     # plt.close()
+#     print(count)
+#     return actual_class, label_software, label_memristor, count, hash_val
 
-def isGoodPlace(model, patchedModel, example, actual_class):
+# def isGoodPlace(model, patchedModel, example, actual_class):
 
-        #Run the perturbed image through the software model
-        f_image = model.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+#         #Run the perturbed image through the software model
+#         f_image = model.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         
-        #These just get the classifications
-        I = (np.array(f_image)).flatten().argsort()[::-1]
-        I = I[0:10]
-        label_software = I[0]
+#         #These just get the classifications
+#         I = (np.array(f_image)).flatten().argsort()[::-1]
+#         I = I[0:10]
+#         label_software = I[0]
         
-        f_imageP = patchedModel.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+#         f_imageP = patchedModel.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         
-        IP = (np.array(f_imageP)).flatten().argsort()[::-1]
-        IP = IP[0:10]
-        label_memristor = IP[0]
+#         IP = (np.array(f_imageP)).flatten().argsort()[::-1]
+#         IP = IP[0:10]
+#         label_memristor = IP[0]
 
-        #Basically, are we in the "Good place"?
-        return (actual_class == label_software) & (actual_class != label_memristor)
+#         #Basically, are we in the "Good place"?
+#         return (actual_class == label_software) & (actual_class != label_memristor)
         
 # def QuarrySave(image, #The image we are testing
 #                iterations, #How many perturbed images are we making?
@@ -378,26 +372,30 @@ if __name__ == '__main__':
     #New test functions for Tyler's method
     
     
+    tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
     #Is good place test
-    counter = 0
-    isGoodPlace_Loader = torch.utils.data.DataLoader(
-        fool_set, batch_size=100, shuffle=True, num_workers=8
-    )
-    while counter < 5: #Number of batches to go through
-        images, label = next(iter(isGoodPlace_Loader)) #A loader iterator returns a tensor of images, and their
-                                                #labels
-        for i in range(0, len(label)):
-            actual_class, label_software, label_memristor, count, hash_val, pert_image = goodPerturb(model, patchedModel, images[i], label[i])
+    # counter = 0
+    # isGoodPlace_Loader = torch.utils.data.DataLoader(
+    #     fool_set, batch_size=100, shuffle=True, num_workers=8
+    # )
+    # while counter < 5: #Number of batches to go through
+    #     images, label = next(iter(isGoodPlace_Loader)) #A loader iterator returns a tensor of images, and their labels
+    #     counter = counter + 1
+    #     for i in range(0, len(label)):
+    #         actual_class, label_software, label_memristor, count, hash_val, pert_image = goodPerturb(model, patchedModel, images[i], label[i])
            
-            if pert_image is not None:
-                pert_image = explorer.quarry.rankFix(pert_image)
-                #QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
-                goodSet = borer.bore(model, actual_class, patchedModel, pert_image, count=10)
-                print(len(goodSet))
-                for x in goodSet:
-                    name = "images/" + str(hash(x)) + "---" + ".png"
-                    plt.imsave(name, x.reshape((x.size(dim=2), x.size(dim=2))))
-                explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
+    #         if pert_image is not None:
+    #             pert_image = explorer.quarry.rankFix(pert_image)
+    #             explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
+    #             print(str(counter) + " " + str(i))
+                
+    #             #goodSet = borer.bore(model, actual_class, patchedModel, pert_image, count=10)
+    #             # print(len(goodSet))
+    #             # for x in goodSet:
+    #             #     name = "images/" + str(hash(x)) + "---" + ".png"
+    #             #     plt.imsave(name, x.reshape((x.size(dim=2), x.size(dim=2))))
+    #             # print(counter)
+    #             # explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
     
     
     
