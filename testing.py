@@ -1,23 +1,15 @@
 import torch
-import torchvision
-from torch.autograd import Variable
 import memtorch
-from memtorch.mn.Module import patch_model
-from memtorch.map.Input import naive_scale
-from memtorch.map.Parameter import naive_map
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import torchvision.transforms as transforms
-import copy
 from os.path import exists # Added this to test if there is already a trained network
-from PIL import Image
 import matplotlib.pyplot as plt
 import argparse # For parsing arguments from command line
 import pandas as pd
 import time 
-import threading
-import math
+
 
 from MNISTMethods import MNISTMethods
 from CIFAR10Methods import CIFAR10Methods
@@ -26,9 +18,6 @@ from patch import patchIdeals
 
 #Our other files
 import tests as tests
-import explorer as explorer
-import TorchUtils as TorchUtils
-import Bore as borer
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
 # Just use "run testing.py [arguments]" to run in spyder console
@@ -259,8 +248,5 @@ if __name__ == '__main__':
         tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
     if(args.TEST_GOOD_PERTURB):
         tests.goodPerturbTest(fool_set, model, patchedModel)
-        
-
-    
-        
+            
         

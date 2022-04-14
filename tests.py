@@ -6,9 +6,6 @@ Created on Thu Apr 14 12:45:09 2022
 @author: tyler
 """
 import torch
-import TorchUtils
-import memtorch
-import deepfool
 
 #Other Files
 from TorchUtils import goodPerturb

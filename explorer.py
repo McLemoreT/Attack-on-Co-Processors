@@ -9,11 +9,6 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-import _thread
-
-from PIL import Image
-
-import torchvision
 import TorchUtils as TorchUtils
 
 

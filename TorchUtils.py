@@ -6,8 +6,6 @@ Created on Tue Mar  8 12:57:54 2022
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-import cv2
 import torch
 from deepfool import deepfool
 from torch.autograd import Variable
