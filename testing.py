@@ -111,121 +111,7 @@ def getFoolData(model, test_loader):
     return r, loop_i, label_orig, label_pert, pert_image; # Not actually needed but might as well keep just in case
 
 
-        
-# def goodPerturb(model, patchedModel, example, actual_class):
-   
-#     r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel) # Run a single test  
-#     finished = False
-#     count = 1 #Number of iterations it took to find an answer
-#     hash_val = hash(example)#Hash of the image that we are testing. Mostly for debug purposes
-    
-#     #Uncomment this to show each image that is handled by this method
-#     # plt.figure()
-#     # plt.ion()
-#     # plt.imshow(example.reshape((28, 28))) #shows it
-#     # plt.suptitle("Example")
-#     # plt.title("Label is: " + str(label_orig)) # It's supposed to be suptitle not subtitle
-#     # plt.show()
-#     # plt.close()
-    
-#     #TODO: Convert this into a while loop that uses runs until count hits its 
-#     #limit, and use break or return leave the loop when finished
-#     #Continue this while loop until we give up or find the answer
-#     for count in range(1,50):
-#         #Run the perturbed image through the software model
-#         f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
-        
-#         #These just get the classifications
-#         I = (np.array(f_image)).flatten().argsort()[::-1]
-#         I = I[0:10]
-#         label_software = I[0]
-        
 
-
-        
-#         if label_software != actual_class:#If the software model misclassified the image
-#             count = 99999#Set count to (basically) infinity
-#             label_memristor = ""
-            
-#             #All this stuff below should be consolidated to happen outside the 
-#             #While loop, and we should use a break to leave the loop
-#             return actual_class, label_software, label_memristor, count, hash_val, None
-        
-#         #Basically, are we in the "Good place"?
-#         if (actual_class == label_software) & (actual_class != label_memristor):
-#             return actual_class, label_software, label_memristor, count, hash_val, pert_image
-#         else:
-#             #If we aren't, generate a new perturbed image
-#             r, loop_i, label_memristor, label_pert, pert_image = deepfool(torch.flatten(pert_image, end_dim=1), patchedModel)
-#             count = count + 1#Increase the number of iterations by 1
-#         #TODO: because we iterate before checking how many times we've iterated
-#         if count == 50:#If we've iterated 50 times
-#             return actual_class, label_software, label_memristor, count, hash_val, None
-#     print("This image was originally classified as " + str(actual_class))
-#     print("The software network thinks it's " + str(label_software))
-#     print("The memristor network thinks it's " + str(label_memristor))
-    
-#     # plt.figure()
-#     # plt.ion()
-#     # plt.imshow(pert_image.reshape((28, 28))) #shows it
-#     # plt.suptitle("Perfectly Fooled Image")
-#     # plt.title("Perturbed Label: " + str(label_pert) + "  Software Label: " + str(label_software)) # It's supposed to be suptitle not subtitle
-#     # plt.show()
-#     # plt.close()
-#     print(count)
-#     return actual_class, label_software, label_memristor, count, hash_val
-
-# def isGoodPlace(model, patchedModel, example, actual_class):
-
-#         #Run the perturbed image through the software model
-#         f_image = model.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
-        
-#         #These just get the classifications
-#         I = (np.array(f_image)).flatten().argsort()[::-1]
-#         I = I[0:10]
-#         label_software = I[0]
-        
-#         f_imageP = patchedModel.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
-        
-#         IP = (np.array(f_imageP)).flatten().argsort()[::-1]
-#         IP = IP[0:10]
-#         label_memristor = IP[0]
-
-#         #Basically, are we in the "Good place"?
-#         return (actual_class == label_software) & (actual_class != label_memristor)
-        
-# def QuarrySave(image, #The image we are testing
-#                iterations, #How many perturbed images are we making?
-#                starting_number, #What number are we starting at for quarry?
-#                model, #What is the model
-#                patchedModel, #What is the memtorch model
-#                actual_class, #What is the actual classification of image
-#                modifier, #Naming modifier for saving the image, typically to identify the perturbed images as a subset of the original
-#                ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
-#     #Iterations are the number of times this should run
-#     #Probably shouldset an upper limit when making quarry images
-#     dims = image.dim();
-#     if ending_number == -1: #If the max number isn't set, set it to the true max number
-#         ending_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
-    
-#     for x in range(starting_number, ending_number, math.floor(ending_number/iterations)):
-#                    #Generate information for new image
-#                    bin_string = explorer.quarry.binaryString(x) 
-#                    cords = explorer.quarry.makeCoordinates(bin_string, image)
-#                    #Clone and detach old image
-#                    new_image = image.clone().detach()
-#                    #Generate new image
-#                    new_image = explorer.quarry.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
-                   
-#                    if(isGoodPlace(model, patchedModel, new_image, actual_class)):
-#                        #save
-#                        name = "images/" + modifier + "---" + str(x) + ".png"
-#                        plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
-#                    else:
-#                        #Don't save
-#                        1+1
-                   
-#     plt.close()
     
   
 if __name__ == '__main__':
@@ -317,10 +203,6 @@ if __name__ == '__main__':
         fool_set, batch_size=100, shuffle=False, num_workers=2
     ) # For random images + perturbations, turn shuffle = True
 
-#    print("Original label = ", label_orig)
-#    print("Perturbed label = ", label_pert)
-#    print("Perturbation Vector = ", np.linalg.norm(r))
-    
 
     patch = True # If true, pay attention to non-ideality flags and apply them
 
@@ -368,36 +250,10 @@ if __name__ == '__main__':
 
     end_time = time.time()
     print("Time taken: ", end_time - start_time)
-    
-    #New test functions for Tyler's method
-    
-    
+
+    #Add command line argument check here
     tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
-    #Is good place test
-    # counter = 0
-    # isGoodPlace_Loader = torch.utils.data.DataLoader(
-    #     fool_set, batch_size=100, shuffle=True, num_workers=8
-    # )
-    # while counter < 5: #Number of batches to go through
-    #     images, label = next(iter(isGoodPlace_Loader)) #A loader iterator returns a tensor of images, and their labels
-    #     counter = counter + 1
-    #     for i in range(0, len(label)):
-    #         actual_class, label_software, label_memristor, count, hash_val, pert_image = goodPerturb(model, patchedModel, images[i], label[i])
-           
-    #         if pert_image is not None:
-    #             pert_image = explorer.quarry.rankFix(pert_image)
-    #             explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
-    #             print(str(counter) + " " + str(i))
-                
-    #             #goodSet = borer.bore(model, actual_class, patchedModel, pert_image, count=10)
-    #             # print(len(goodSet))
-    #             # for x in goodSet:
-    #             #     name = "images/" + str(hash(x)) + "---" + ".png"
-    #             #     plt.imsave(name, x.reshape((x.size(dim=2), x.size(dim=2))))
-    #             # print(counter)
-    #             # explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
-    
-    
+
     
     #Good perturb test
     counter = 0
