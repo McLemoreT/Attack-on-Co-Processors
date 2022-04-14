@@ -182,15 +182,9 @@ def goodPerturb(model, patchedModel, example, actual_class):
     return actual_class, label_software, label_memristor, count, hash_val
 
 def isGoodPlace(model, patchedModel, example, actual_class):
-        prev = time.time()
-        
-        #r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel)
-        #print("Deepfool time: " + str(time.time() - prev))
-        #prev = time.time()
+
         #Run the perturbed image through the software model
         f_image = model.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
-        print("Forwarding time: " + str(time.time() - prev))
-        prev = time.time()
         
         #These just get the classifications
         I = (np.array(f_image)).flatten().argsort()[::-1]
@@ -198,21 +192,13 @@ def isGoodPlace(model, patchedModel, example, actual_class):
         label_software = I[0]
         
         f_imageP = patchedModel.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
-        print("Forwarding time: " + str(time.time() - prev))
-        prev = time.time()
         
         IP = (np.array(f_imageP)).flatten().argsort()[::-1]
         IP = IP[0:10]
         label_memristor = IP[0]
 
-        print("Classifier time: " + str(time.time() - prev))
-        prev = time.time()
-
         #Basically, are we in the "Good place"?
-        if (actual_class == label_software) & (actual_class != label_memristor):
-            return True
-        
-        return False
+        return (actual_class == label_software) & (actual_class != label_memristor)
         
 # def QuarrySave(image, #The image we are testing
 #                iterations, #How many perturbed images are we making?
