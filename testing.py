@@ -39,6 +39,7 @@ parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and 
 # Test functiosns in tests.oy
 parser.add_argument("-TEST-GOOD-PERTURB", "--TEST_GOOD_PERTURB", help="Runs the Good Perturb test", action="store_true")
 parser.add_argument("-TEST-QUARRY", "--TEST_QUARRY", help="Runs the Quarry test", action="store_true")
+parser.add_argument("-TEST-BORE", "--TEST_BORE", help="Runs the Quarry test", action="store_true")
 args = parser.parse_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
@@ -248,5 +249,6 @@ if __name__ == '__main__':
         tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
     if(args.TEST_GOOD_PERTURB):
         tests.goodPerturbTest(fool_set, model, patchedModel)
-            
+    if(args.TEST_BORE):
+        tests.bore(fool_set, model, patchedModel)
         
