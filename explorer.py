@@ -14,6 +14,8 @@ import _thread
 from PIL import Image
 
 import torchvision
+import TorchUtils as TorchUtils
+from testing import isGoodPlace
 
 
 import math
@@ -65,12 +67,38 @@ class quarry:
         name = "images/" + str(modifier) + ".png"
         plt.imsave(name, image.reshape((image.size(dim=2), image.size(dim=2))))
     
-    def getPerturbedImage (image, number):
-        numberstring = quarry.binaryString(number)
-        #params = TorchUtils.getNormParam(image) #Max, Min, Iteration
-        #location = quarry.makeCoordinates(numberstring, image)
-        #quarry.editImage(location, params[2], image)
-        #return image
+    def QuarrySave(image, #The image we are testing
+                   iterations, #How many perturbed images are we making?
+                   starting_number, #What number are we starting at for quarry?
+                   model, #What is the model
+                   patchedModel, #What is the memtorch model
+                   actual_class, #What is the actual classification of image
+                   modifier, #Naming modifier for saving the image, typically to identify the perturbed images as a subset of the original
+                   ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
+        #Iterations are the number of times this should run
+        #Probably shouldset an upper limit when making quarry images
+        dims = image.dim();
+        if ending_number == -1: #If the max number isn't set, set it to the true max number
+            ending_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
+        
+        for x in range(starting_number, ending_number, math.floor(ending_number/iterations)):
+                       #Generate information for new image
+                       bin_string = quarry.binaryString(x) 
+                       cords = quarry.makeCoordinates(bin_string, image)
+                       #Clone and detach old image
+                       new_image = image.clone().detach()
+                       #Generate new image
+                       new_image = quarry.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
+                       
+                       if(isGoodPlace(model, patchedModel, new_image, actual_class)):
+                           #save
+                           name = "images/" + modifier + "---" + str(x) + ".png"
+                           plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
+                       else:
+                           #Don't save
+                           1+1
+                       
+        plt.close()
 
          
         

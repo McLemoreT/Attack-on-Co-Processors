@@ -214,38 +214,38 @@ def isGoodPlace(model, patchedModel, example, actual_class):
         
         return False
         
-def QuarrySave(image, #The image we are testing
-               iterations, #How many perturbed images are we making?
-               starting_number, #What number are we starting at for quarry?
-               model, #What is the model
-               patchedModel, #What is the memtorch model
-               actual_class, #What is the actual classification of image
-               modifier, #Naming modifier for saving the image, typically to identify the perturbed images as a subset of the original
-               ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
-    #Iterations are the number of times this should run
-    #Probably shouldset an upper limit when making quarry images
-    dims = image.dim();
-    if ending_number == -1: #If the max number isn't set, set it to the true max number
-        ending_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
+# def QuarrySave(image, #The image we are testing
+#                iterations, #How many perturbed images are we making?
+#                starting_number, #What number are we starting at for quarry?
+#                model, #What is the model
+#                patchedModel, #What is the memtorch model
+#                actual_class, #What is the actual classification of image
+#                modifier, #Naming modifier for saving the image, typically to identify the perturbed images as a subset of the original
+#                ending_number = -1): #Max number defaults to -1 so we can calculate the actual max number
+#     #Iterations are the number of times this should run
+#     #Probably shouldset an upper limit when making quarry images
+#     dims = image.dim();
+#     if ending_number == -1: #If the max number isn't set, set it to the true max number
+#         ending_number = pow(2,image.size(dim=dims) * image.size(dim=dims - 1))
     
-    for x in range(starting_number, ending_number, math.floor(ending_number/iterations)):
-                   #Generate information for new image
-                   bin_string = explorer.quarry.binaryString(x) 
-                   cords = explorer.quarry.makeCoordinates(bin_string, image)
-                   #Clone and detach old image
-                   new_image = image.clone().detach()
-                   #Generate new image
-                   new_image = explorer.quarry.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
+#     for x in range(starting_number, ending_number, math.floor(ending_number/iterations)):
+#                    #Generate information for new image
+#                    bin_string = explorer.quarry.binaryString(x) 
+#                    cords = explorer.quarry.makeCoordinates(bin_string, image)
+#                    #Clone and detach old image
+#                    new_image = image.clone().detach()
+#                    #Generate new image
+#                    new_image = explorer.quarry.editImage(cords, TorchUtils.getNormParam(image)[2], new_image)
                    
-                   if(isGoodPlace(model, patchedModel, new_image, actual_class)):
-                       #save
-                       name = "images/" + modifier + "---" + str(x) + ".png"
-                       plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
-                   else:
-                       #Don't save
-                       1+1
+#                    if(isGoodPlace(model, patchedModel, new_image, actual_class)):
+#                        #save
+#                        name = "images/" + modifier + "---" + str(x) + ".png"
+#                        plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
+#                    else:
+#                        #Don't save
+#                        1+1
                    
-    plt.close()
+#     plt.close()
     
   
 if __name__ == '__main__':
@@ -411,6 +411,7 @@ if __name__ == '__main__':
                 for x in goodSet:
                     name = "images/" + str(hash(x)) + "---" + ".png"
                     plt.imsave(name, x.reshape((x.size(dim=2), x.size(dim=2))))
+                explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
     
     
     
