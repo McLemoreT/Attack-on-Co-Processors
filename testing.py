@@ -188,7 +188,7 @@ def isGoodPlace(model, patchedModel, example, actual_class):
         #print("Deepfool time: " + str(time.time() - prev))
         #prev = time.time()
         #Run the perturbed image through the software model
-        f_image = model.forward(Variable(example[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        f_image = model.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         print("Forwarding time: " + str(time.time() - prev))
         prev = time.time()
         
@@ -197,7 +197,7 @@ def isGoodPlace(model, patchedModel, example, actual_class):
         I = I[0:10]
         label_software = I[0]
         
-        f_imageP = patchedModel.forward(Variable(example[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        f_imageP = patchedModel.forward(Variable(example[None, None, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
         print("Forwarding time: " + str(time.time() - prev))
         prev = time.time()
         
