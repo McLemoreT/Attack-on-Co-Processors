@@ -47,6 +47,9 @@ parser.add_argument("-N", "--nonID_NonLinear", help="Applies NonLinear non-ideal
 parser.add_argument("-MNIST", "--MNIST", help="Uses the MNIST Dataset and models", action="store_true")
 parser.add_argument("-CIFAR10", "--CIFAR10", help="Uses the CIFAR10 Dataset and models", action="store_true")
 
+# Test functiosns in tests.oy
+parser.add_argument("-TEST-GOOD-PERTURB", "--TEST_GOOD_PERTURB", help="Runs the Good Perturb test", action="store_true")
+parser.add_argument("-TEST-QUARRY", "--TEST_QUARRY", help="Runs the Quarry test", action="store_true")
 args = parser.parse_args()
 
 torch.manual_seed(0) #seeds the array for consistent results
@@ -252,29 +255,12 @@ if __name__ == '__main__':
     print("Time taken: ", end_time - start_time)
 
     #Add command line argument check here
-    tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
+    if(args.TEST_QUARRY):
+        tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
+    if(args.TEST_GOOD_PERTURB):
+        tests.goodPerturbTest(fool_set, model, patchedModel)
+        
 
     
-    #Good perturb test
-    counter = 0
-    good_data = []
-    new_loader = torch.utils.data.DataLoader(
-        fool_set, batch_size=100, shuffle=True, num_workers=8
-    )
-    while counter < 5: #Number of batches to go through
-        images, label = next(iter(new_loader)) #A loader iterator returns a tensor of images, and their
-                                                #labels
-        for i in range(0, len(label)):
-            
-            good_data.append(goodPerturb(model, patchedModel, images[i], label[i]))
-    
-#Data collected from above test
-#Actual value, software value, memristor value, count
-    lines = []
-    for row in good_data:
-        lines.append(' '.join(str(x) for x in row))
-    print('\n'.join(lines))
-    #next(iter(fool_loader))[0][0]
-    pd.DataFrame(good_data).to_csv("Good_Data.csv", index=False)
         
         
