@@ -224,14 +224,16 @@ if __name__ == '__main__':
     #These are uneccessary because this set is "grayscale"
     #std = [ 0.229, 0.224, 0.225 ]
     #mean = [ 0.485, 0.456, 0.406 ]
-    
-    tf = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), #because grayscale
+
+        
+    #Display perturbed image
+    if args.verbose:
+            
+        tf = transforms.Compose([transforms.Normalize((0.5,), (0.5,)), #because grayscale
         transforms.Lambda(clip),
         transforms.ToPILImage(),
         transforms.CenterCrop(32)])
         
-    #Display perturbed image
-    if args.verbose:
         plt.figure()
         plt.ion()
         plt.imshow(tf(pert_image.cpu()[0])) #shows it
