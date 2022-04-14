@@ -9,13 +9,15 @@ import numpy as np
 import testing as leTest
 import matplotlib.pyplot as plt
 import math
+import TorchUtils as torchU
+import time
 
 def editImage(location, diff, image): #location is location list
     #diff is distance to perturb 
     #image is the image
     for cord in location:
         #Go to the location specified by cord in image, and add diff
-        image[0][0][cord[1]][cord[0]] = image[0][0][cord[1]][cord[0]] + diff 
+        image[0][cord[1]][cord[0]] = image[0][cord[1]][cord[0]] + diff 
         
     return image
 
@@ -50,34 +52,49 @@ def saveImage (image, modifier):
     name = "images/" + str(modifier) + ".png"
     plt.imsave(name, image.reshape((image.size(dim=2), image.size(dim=2))))
 
-def getPerturbedImage (image, number):
-    numberstring = quarry.binaryString(number)
-    #params = TorchUtils.getNormParam(image) #Max, Min, Iteration
-    #location = quarry.makeCoordinates(numberstring, image)
-    #quarry.editImage(location, params[2], image)
-    #return image
-
-def bbore(model, actual_class, patchedModel, img, stride, imgWidth, imgHeight):
+def bore(model, actual_class, patchedModel, img, count):
     
     goodSet = [] #Empty set initialization of "good" imaages
     MAXVAL = 1.0728 + 0.00000000000001 #TODO: FIXME
+    
+    stride = torchU.getNormParam(img)[2]
 
-    for i in range(0, int(imgWidth*imgHeight/stride)):
-        #iterate over all "zones"
-
-        boreImg = img.clone().detach() #Reset image in between bores
-        pertR = np.zeros(img.cpu().numpy().shape) #reset in between "bores"
-
-        for j in range(i*stride, (i+1)*stride): #Iterate through different sets of bores with this head size
-            pertR[0][0][int(j/imgHeight)][j%imgHeight] = 0.1 #TODO: Replace with drill size
-
-            while boreImg.max() <= MAXVAL: #While inside the bounds
-                    boreImg = boreImg + pertR #Drill "deeper"
+    for i in range(1, count):
+        boreImg = img.clone().detach()
+        binString = binaryString(i)
+        coords = makeCoordinates(binString, boreImg)
+        editImage(coords, stride, boreImg)
+        count = 0
         
-                    if(leTest.isGoodPlace(model, patchedModel, boreImg, actual_class)):
-                        break
-                    else:
-                        goodSet.append(boreImg)
+        while boreImg.max() <= MAXVAL: #While inside the bounds
+                editImage(coords, stride, boreImg)
+                
+                print("Bore" + str(i) + "," + str(count))
+                count+=1
+
+                if(leTest.isGoodPlace(model, patchedModel, boreImg, actual_class)):
+                    break
+                else:      
+                    goodSet.append(boreImg)
+        
+        
+
+    # for i in range(0, int(imgWidth*imgHeight/stride)):
+    #     #iterate over all "zones"
+
+    #     boreImg = img.clone().detach() #Reset image in between bores
+    #     pertR = np.zeros(img.cpu().numpy().shape) #reset in between "bores"
+
+    #     for j in range(i*stride, (i+1)*stride): #Iterate through different sets of bores with this head size
+    #         pertR[0][0][int(j/imgHeight)][j%imgHeight] = 0.1 #TODO: Replace with drill size
+
+    #         while boreImg.max() <= MAXVAL: #While inside the bounds
+    #                 boreImg = boreImg + pertR #Drill "deeper"
+        
+    #                 if(leTest.isGoodPlace(model, patchedModel, boreImg, actual_class)):
+    #                     break
+    #                 else:
+    #                     goodSet.append(boreImg)
 
     return goodSet
 
@@ -261,4 +278,4 @@ if __name__ == '__main__':
                 -2.3539e-04,  2.9761e-05, -1.7513e-04,  0.0000e+00,  0.0000e+00,
                 0.0000e+00,  0.0000e+00,  0.0000e+00]]]])
     
-    print(len(bbore([], test_tensor, stride=2, imgWidth=28, imgHeight=28)))
+    print(len(bore([], test_tensor, stride=2, imgWidth=28, imgHeight=28)))

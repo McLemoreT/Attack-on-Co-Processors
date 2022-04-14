@@ -27,6 +27,7 @@ from patch import patchIdeals
 #Our other files
 import explorer as explorer
 import TorchUtils as TorchUtils
+import Bore as borer
 
 parser = argparse.ArgumentParser() #Create parser variable for command line arguments
 # Just use "run testing.py [arguments]" to run in spyder console
@@ -181,15 +182,31 @@ def goodPerturb(model, patchedModel, example, actual_class):
     return actual_class, label_software, label_memristor, count, hash_val
 
 def isGoodPlace(model, patchedModel, example, actual_class):
-
-        r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel)
+        prev = time.time()
+        
+        #r, loop_i, label_memristor, label_pert, pert_image = deepfool(example, patchedModel)
+        #print("Deepfool time: " + str(time.time() - prev))
+        #prev = time.time()
         #Run the perturbed image through the software model
-        f_image = model.forward(Variable(pert_image[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        f_image = model.forward(Variable(example[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        print("Forwarding time: " + str(time.time() - prev))
+        prev = time.time()
         
         #These just get the classifications
         I = (np.array(f_image)).flatten().argsort()[::-1]
         I = I[0:10]
         label_software = I[0]
+        
+        f_imageP = patchedModel.forward(Variable(example[None, :, :, :], requires_grad=True)[0]).data.cpu().numpy().flatten()
+        print("Forwarding time: " + str(time.time() - prev))
+        prev = time.time()
+        
+        IP = (np.array(f_imageP)).flatten().argsort()[::-1]
+        IP = IP[0:10]
+        label_memristor = IP[0]
+
+        print("Classifier time: " + str(time.time() - prev))
+        prev = time.time()
 
         #Basically, are we in the "Good place"?
         if (actual_class == label_software) & (actual_class != label_memristor):
@@ -388,8 +405,12 @@ if __name__ == '__main__':
            
             if pert_image is not None:
                 pert_image = explorer.quarry.rankFix(pert_image)
-                QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
-    
+                #QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
+                goodSet = borer.bore(model, actual_class, patchedModel, pert_image, count=10)
+                print(len(goodSet))
+                for x in goodSet:
+                    name = "images/" + str(hash(x)) + "---" + ".png"
+                    plt.imsave(name, x.reshape((x.size(dim=2), x.size(dim=2))))
     
     
     
