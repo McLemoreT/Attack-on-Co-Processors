@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import TorchUtils as TorchUtils
+#Some demo imports
+import  random
 
 
 import math
@@ -270,7 +272,8 @@ if __name__ == '__main__': #Basically everything here is just test functions
     # test.displayImage(test_tensor)
     # print(test.binaryConverter(7))
     # print(test.getCoordinates(test.binaryConverter(7), test_tensor))
-    
+    #test_tensora = torch.FloatTensor([[[[0,1,1],[0,1,0],[1,0,0]]]])
+    test_tensor = quarry.rankFix(test_tensor)
     # small = torch.FloatTensor([[[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,1,0,1]]]])
     # print(small)
     
@@ -288,12 +291,19 @@ if __name__ == '__main__': #Basically everything here is just test functions
     # test.editImage(cords, 0.5, test_tensor)
     # test.displayImage(test_tensor)
     
+    #quarry.displayImage(test_tensora)
+    #quarry.saveImage(test_tensora, 1)
+    
     start = time.time()
     number = 1
     current_num = 0
+    last_time = time.time()
     while number < 100000:
-        current_num = current_num + number
-        print(current_num)
+        if number % 50 == 0:
+            print(50/(time.time()-last_time))
+            last_time = time.time()
+        current_num = current_num  + random.randrange(1,64) 
+        #print(current_num)
         binstring = quarry.binaryString( current_num)
         cords = quarry.makeCoordinates(binstring, test_tensor)
         newtest = test_tensor.clone().detach()
