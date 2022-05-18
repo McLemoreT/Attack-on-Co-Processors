@@ -10,7 +10,7 @@ import torch
 #Other Files
 from TorchUtils import goodPerturb
 import explorer as explorer
-import bore as borer
+import Bore as borer
 import matplotlib.pyplot as plt
     
 
