@@ -201,6 +201,8 @@ if __name__ == '__main__':
 
     if(patch):
         patchedModel = patchIdeals(model, args) # The non-idealities get applied to the model
+        print(args)
+        torch.save(patchedModel.state_dict(), 'patched_trained_model' + '.pt')
     else:
         patchedModel = model # The model stays as itself
         
