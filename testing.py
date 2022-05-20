@@ -253,9 +253,9 @@ if __name__ == '__main__':
     #    tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
     if(args.TEST_QUARRY):
         print("Testing Quarry")
-        tests.bore(model, patchedModel, fool_set)
+        tests.QuarryTest(model, patchedModel, fool_set)
     if(args.TEST_GOOD_PERTURB):
         tests.goodPerturbTest(model, patchedModel, fool_set)
     if(args.TEST_BORE):
-        tests.bore(model, patchedModel, fool_set)
+        tests.boreTest(model, patchedModel, fool_set)
         
