@@ -27,7 +27,7 @@ def QuarryTest(model, patchedModel, fool_set):
            
             if pert_image is not None:
                 pert_image = explorer.quarry.rankFix(pert_image)
-                explorer.quarry.QuarrySave(pert_image, 100, 0, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
+                explorer.quarry.QuarrySave(pert_image, 100, 1, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
 
 def goodPerturbTest(fool_set, model, patchedModel):
     counter = 0
