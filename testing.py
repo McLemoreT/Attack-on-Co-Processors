@@ -249,8 +249,10 @@ if __name__ == '__main__':
     print("Time taken: ", end_time - start_time)
 
     #Add command line argument check here
+    #if(args.TEST_QUARRY):
+    #    tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
     if(args.TEST_QUARRY):
-        tests.isGoodPlaceTest(polyset, model, patchedModel, fool_set)
+        tests.bore(model, patchedModel, fool_set)
     if(args.TEST_GOOD_PERTURB):
         tests.goodPerturbTest(fool_set, model, patchedModel)
     if(args.TEST_BORE):
