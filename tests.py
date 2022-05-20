@@ -27,9 +27,9 @@ def QuarryTest(model, patchedModel, fool_set):
            
             if pert_image is not None:
                 pert_image = explorer.quarry.rankFix(pert_image)
-                explorer.quarry.QuarrySave(pert_image, 100, 1, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 10000)
+                explorer.quarry.QuarrySave(pert_image, 10000, 1, model, patchedModel, label_software, str(counter) + " " + str(i), ending_number = 100000)
 
-def goodPerturbTest(fool_set, model, patchedModel):
+def goodPerturbTest(model, patchedModel, fool_set):
     counter = 0
     good_data = []
     new_loader = torch.utils.data.DataLoader(
