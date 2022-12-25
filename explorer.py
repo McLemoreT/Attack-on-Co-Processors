@@ -13,7 +13,6 @@ import TorchUtils as TorchUtils
 #Some demo imports
 import  random
 
-
 import math
 class quarry:
     
@@ -27,7 +26,6 @@ class quarry:
             
         return image
 
-    
     def binaryString(number):
         return format(number, 'b') #Convert an into to a string of 0's and 1's
     
@@ -50,8 +48,7 @@ class quarry:
                 arr[i][1] = math.floor(itter / width)
                 i = i + 1
             itter = itter + 1
-        return arr.astype(int)
-            
+        return arr.astype(int)       
 
     def displayImage (image): #Just a quick function to display an image
          plt.figure()
@@ -92,43 +89,13 @@ class quarry:
                            plt.imsave(name, new_image.reshape((new_image.size(dim=2), new_image.size(dim=2))))
                        else:
                            #Don't save
-                           1+1
-                       
-        plt.close()
-
-         
-        
-        
+                           1+1         
+        plt.close()  
         
 if __name__ == '__main__': #Basically everything here is just test functions
     test_tensor = torch.load('./FiveTensor.pt')
-    
-    torch.save(test_tensor, '/home/tyler/Documents/Rowan/Senior_Clinic/ClinicRepo/Attack-on-Co-Processors/FiveTensor.pt')
-    # test.displayImage(test_tensor)
-    # print(test.binaryConverter(7))
-    # print(test.getCoordinates(test.binaryConverter(7), test_tensor))
-    #test_tensora = torch.FloatTensor([[[[0,1,1],[0,1,0],[1,0,0]]]])
     test_tensor = quarry.rankFix(test_tensor)
-    # small = torch.FloatTensor([[[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,1,0,1]]]])
-    # print(small)
-    
-    # binstring = test.binaryString(17)
-    # cords = test.makeCoordinates(binstring, small)
-    # oldsmall = small.clone().detach()
-    
-    # test.editImage(cords, 0.5, small)
-    # test.displayImage(small)
-    # test.displayImage(oldsmall)
-    
-    # binstring = test.binaryString(624109300249999999999999999999999944600573)
-    # cords = test.makeCoordinates(binstring, test_tensor)
-    # test.displayImage(test_tensor)
-    # test.editImage(cords, 0.5, test_tensor)
-    # test.displayImage(test_tensor)
-    
-    #quarry.displayImage(test_tensora)
-    #quarry.saveImage(test_tensora, 1)
-    
+
     start = time.time()
     number = 1
     current_num = 0
@@ -144,38 +111,9 @@ if __name__ == '__main__': #Basically everything here is just test functions
         newtest = test_tensor.clone().detach()
         quarry.editImage(cords, 0.5, newtest)
         quarry.displayImage(newtest)
-        
-       # newtest = test_tensor.clone().detach()
-        #quarry.getPerturbedImage(newtest, number)
-        
-        #name = "images/" + str(number) + ".png"
-        #plt.imsave(name, newtest.reshape((newtest.size(dim=2), newtest.size(dim=2))))
-        
-
-        
-        #test.displayImage(newtest)
-        
-        #_thread.start_new_thread(test.thread_test, (number, test_tensor))
-        #test.thread_test(number, test_tensor)
-        
-        #Threading test 1
-        #_thread.start_new_thread(test.editImage , (test.makeCoordinates(binstring, test_tensor), 0.5, test_tensor.clone().detach()))
-        
-        #Display image threaded
-        #test.displayImage(test.editImage(test.makeCoordinates(binstring, test_tensor), 0.5, test_tensor.clone().detach()))
-        
         number = number + 1
 
-        
-        
     plt.close()
     end = time.time()
     timer = end - start
     print(timer)
-    
-    
-    # test.displayImage(small)
-    # edits = test.binaryConverter(16)
-    # cords = test.getCoordinates(edits, small)
-    # new_small = test.editImage(cords, 0.5, small)
-    # test.displayImage(new_small)
