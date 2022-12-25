@@ -11,7 +11,7 @@ from deepfool import deepfool
 from torch.autograd import Variable
 
 
-tensor = torch.FloatTensor([[[[ 0.0000e+00,  0.0000e+00,  3.6297e-04,  5.9150e-05, -7.3652e-03,
+test_tensor = torch.FloatTensor([[[[ 0.0000e+00,  0.0000e+00,  3.6297e-04,  5.9150e-05, -7.3652e-03,
                 -5.7948e-03,  1.8529e-02,  2.1448e-03,  3.8571e-02,  4.1277e-03,
                 2.0284e-02,  1.6984e-02,  2.8106e-02,  1.6503e-02,  1.7238e-03,
                 8.1881e-04, -2.9310e-03,  3.7401e-03,  0.0000e+00,  0.0000e+00,
@@ -283,4 +283,4 @@ def isGoodPlace(model, patchedModel, example, actual_class):
         return (actual_class == label_software) & (actual_class != label_memristor)
         
 
-print(getNormParam(tensor)[2])
+print(getNormParam(test_tensor)[2])
